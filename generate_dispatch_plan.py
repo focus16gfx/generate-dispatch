@@ -218,16 +218,23 @@ def each_date(date):
                     n_pu = new_row[6].value
                     n_trailer = new_row[7].value
                     n_status = new_row[8].value
+                    n_probill = new_row[0]
                     o_pu = old_row[6].value
                     o_trailer = old_row[7].value
                     o_status = old_row[8].value
+                    o_probill = old_row[0].value
 
                     if not n_pu:
                         n_pu = o_pu
                         new_row[6].value = n_pu
-                    if not o_trailer:
+                    if not n_trailer:
                         n_trailer = o_trailer
                         new_row[7].value = n_trailer
+                    if not n_probill:
+                        n_probill = o_probill
+                        new_row[0] = n_probill
+
+
 
                     status_priority = {'ASSGN': 1,
                                        'CARDED': 2,
@@ -377,7 +384,7 @@ sheets = og_wb.sheetnames
 for sheet in sheets[1:]:
     # is_import_v = input('**Want to import probills starting with \'V\'?(Y/N): ')
     is_import_v = 'Y'
-    old_filename = input('**Old Dispatch plan file name: ')
+    old_filename = input(f'**{sheet} Old Dispatch plan file name: ')
     # old_filename = ''
 
     if old_filename == '':
