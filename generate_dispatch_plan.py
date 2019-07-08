@@ -4,38 +4,15 @@ from openpyxl.styles.borders import BORDER_THIN, BORDER_THICK
 from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
 import datetime
 import re
-import pyexcel as p
 import os
 import sys
+import csv
+from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
 print('>>Initialising...')
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
-
-def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment=None):
-    top = Border(top=border.top)
-    left = Border(left=border.left)
-    right = Border(right=border.right)
-    bottom = Border(bottom=border.bottom)
-    first_cell = ws[cell_range.split(":")[0]]
-    if alignment:
-        ws.merge_cells(cell_range)
-        first_cell.alignment = alignment
-    rows = ws[cell_range]
-    if font:
-        first_cell.font = font
-    for cell in rows[0]:
-        cell.border = cell.border + top
-    for cell in rows[-1]:
-        cell.border = cell.border + bottom
-    for row in rows:
-        l = row[0]
-        r = row[-1]
-        l.border = l.border + left
-        r.border = r.border + right
-        if fill:
-            for c in row:
-                c.fill = fill
 
 
 redFill = PatternFill(start_color='FFFF0000', end_color='FFFF0000', fill_type='solid')
@@ -67,84 +44,137 @@ thick_border = Border(bottom=Side(border_style=BORDER_THICK, color='00000000'),
                       top=Side(border_style=BORDER_THICK, color='00000000'),
                       left=Side(border_style=BORDER_THICK, color='00000000'),
                       right=Side(border_style=BORDER_THICK, color='00000000'))
-print('>>Script started!')
-
-'''take filename as input and convert xls to xlsx'''
-og_filename = input('**Report Excel file name: ')
-#og_filename = 'BC to AB OB PLANNER'
-#is_import_v = input('**Want to import probills starting with \'V\'?(Y/N): ')
-is_import_v = 'Y'
-old_filename = input('**Old Dispatch plan file name: ')
-#old_filename = 'DISPATCH_PLAN Thursday_July_04_2019 t_1314'
-
-if old_filename == '':
-    old_filename = None
-
-if is_import_v.lower() == 'y':
-    is_import_v = True
-elif is_import_v.lower() == 'n':
-    is_import_v = False
-else:
-    print(f'>>Invalid input. Please use either Y for Yes or N for No')
-
-try:
-    p.save_book_as(file_name=wd + '\\' + og_filename + '.xls',
-                   dest_file_name=f'{wd}\\xlsx_{og_filename}.xlsx')
-except FileNotFoundError:
-    try:
-        p.save_book_as(file_name=wd + '\\' + og_filename + '.xlsx',
-                       dest_file_name=f'{wd}\\xlsx_{og_filename}.xlsx')
-    except FileNotFoundError:
-        print(f'>>Incorrect file name. Check again.')
-        sys.exit()
-
-old_ws = ''
-
-if old_filename:
-    old_wb = load_workbook(filename=wd + '\\' + old_filename + '.xlsx')
-    old_ws = old_wb.active
-
-'''instantiate new worksheet to write data into'''
-wb = Workbook()
-ws = wb.active
-
-'''headers dictionary'''
-dict_headers = {'A': 'PROBILL',
-                'B': 'TRIP',
-                'C': 'ORIGIN',
-                'D': 'PICKUP BY',
-                'E': 'DESTINATION',
-                'F': 'DELIVER BY',
-                'G': 'P/U',
-                'H': 'TRAILER',
-                'I': 'STATUS'}
-
-old_dict_headers = {'J': 'TRIP',  # 9
-                    'K': 'PICKUP BY',  # 10
-                    'L': 'ORIGIN',  # 11
-                    'Q': 'DELIVER BY',  # 16
-                    'T': 'DESTINATION',  # 19
-                    'U': 'PROBILL',  # 20
-                    'Y': 'P/U',  # 24
-                    'Z': 'TRAILER',  # 25
-                    'AC': 'STATUS'}  # 28
-
-'''setting default width for columns'''
-ws.column_dimensions['A'].width = 14
-ws.column_dimensions['B'].width = 13
-ws.column_dimensions['C'].width = 25
-ws.column_dimensions['D'].width = 30
-ws.column_dimensions['E'].width = 25
-ws.column_dimensions['F'].width = 30
-ws.column_dimensions['G'].width = 10
-ws.column_dimensions['H'].width = 10
-ws.column_dimensions['I'].width = 10
 
 '''create font objects for different text fields'''
 ft = Font(bold=True, size=15)
 ft_small = Font(bold=True)
 title_ft = Font(bold=True, size=25)
 title_2ft = Font(bold=True, size=20)
+
+
+def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment=None):
+    top = Border(top=border.top)
+    left = Border(left=border.left)
+    right = Border(right=border.right)
+    bottom = Border(bottom=border.bottom)
+    first_cell = ws[cell_range.split(":")[0]]
+    if alignment:
+        ws.merge_cells(cell_range)
+        first_cell.alignment = alignment
+    rows = ws[cell_range]
+    if font:
+        first_cell.font = font
+    for cell in rows[0]:
+        cell.border = cell.border + top
+    for cell in rows[-1]:
+        cell.border = cell.border + bottom
+    for row in rows:
+        l = row[0]
+        r = row[-1]
+        l.border = l.border + left
+        r.border = r.border + right
+        if fill:
+            for c in row:
+                c.fill = fill
+
+
+def create_orig_dest_sheet(origin, destination, og_wb):
+    og_ws_main = og_wb.active
+    og_ws_O2D = og_wb.create_sheet(f'{origin} to {destination}')
+
+    '''write headers'''
+    for i in range(10):
+        og_ws_O2D.cell(1, i + 1).value = og_ws_main.cell(1, i + 1).value
+        og_ws_O2D.cell(1, i + 1).alignment = Alignment(horizontal='center')
+
+
+    '''append rows to new origin to destination sheet'''
+    O2D_rows = []
+    prev_trip = ''
+    current_trip = ''
+    for row in list(og_ws_main.rows)[2:]:
+        origin_pr = row[2].value[-3:].replace(' ', '')
+        destination_pr = row[4].value[-3:].replace(' ', '')
+
+        if origin_pr == origin and destination_pr == destination:
+            """skip rows with same trip as last trip"""
+            current_trip = row[1].value
+            if current_trip == prev_trip:
+                O2D_rows.pop(-1)
+            O2D_rows.append(row)
+            prev_trip = current_trip
+
+
+
+
+
+    """write row data to sheet"""
+    row_pointer = 3
+    for row in O2D_rows:
+        for column, cellu in enumerate(row, start=1):
+            og_ws_O2D.cell(row_pointer, column).value = cellu.value
+            og_ws_O2D.cell(row_pointer, column).alignment = Alignment(horizontal='center')
+        row_pointer += 1
+
+    return og_ws_O2D
+
+
+def csv_to_xlsx(og_filename):
+    """take filename as input and convert csv to xlsx"""
+    # og_filename = input('**Report csv file name: ')
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    with open(f'{wd}\\{og_filename}.csv') as f:
+        reader = csv.reader(f, delimiter=',')
+        for row in reader:
+            ws.append(row)
+    wb.save(f'{wd}\\{og_filename}.xlsx')
+
+    og_wb = load_workbook(f'{wd}\\{og_filename}.xlsx')
+    og_ws_main = og_wb.active
+
+    '''delete all nulls and center align main sheet'''
+    for row in list(og_ws_main.rows)[2:]:
+        for column, cellu in enumerate(row, start=1):
+            cellu.alignment = Alignment(horizontal='center')
+            if cellu.value.replace(' ', '') == '<null>':
+                cellu.value = ''
+
+
+    og_ws_BC2AB = create_orig_dest_sheet('BC', 'AB', og_wb)
+    og_ws_AB2BC = create_orig_dest_sheet('AB', 'BC', og_wb)
+
+    '''get all sheet names'''
+    sheets = og_wb.sheetnames
+
+    '''adjust column width'''
+    for sheet_title in sheets:
+        ws = og_wb[sheet_title]
+        ws.column_dimensions['A'].width = 14
+        ws.column_dimensions['B'].width = 13
+        ws.column_dimensions['C'].width = 25
+        ws.column_dimensions['D'].width = 30
+        ws.column_dimensions['E'].width = 25
+        ws.column_dimensions['F'].width = 30
+        ws.column_dimensions['G'].width = 10
+        ws.column_dimensions['H'].width = 10
+        ws.column_dimensions['I'].width = 10
+        ws.column_dimensions['J'].width = 30
+
+
+    og_wb.save(f'{wd}\\{og_filename}.xlsx')
+
+
+'''parse unique dates from Delivery dates'''
+
+
+def get_dates():
+    global dates
+    pt3 = re.compile(r'^\d{1,2}/\d{1,2}/\d{4}')
+    for row in rows_list:
+        date_extracted = re.match(pt3, str(row[deliverydate_index].value)).group(0)
+        if date_extracted not in dates:
+            dates.append(date_extracted)
 
 
 def write_headers(row_num, fontyy=ft):
@@ -156,103 +186,13 @@ def write_headers(row_num, fontyy=ft):
         ws[coord + str(row_num)].alignment = Alignment(horizontal='center')
     style_range(ws, f'A{row_num}:I{row_num}', border=thin_allborder)
 
-write_headers(3)
-
-"""Open xlsx converted original sheet"""
-og_wb = openpyxl.load_workbook(f'{wd}\\xlsx_{og_filename}.xlsx')
-og_sheet = og_wb.active
-
-'''merge and format cells'''
-ws.merge_cells('A1:I1')
-ws['A1'].value = og_sheet['A1'].value
-ws['A1'].font = title_ft
-ws['A1'].alignment = Alignment(horizontal='center')
-ws.merge_cells('A2:I2')
-ws['A2'].value = og_sheet['O1'].value
-ws['A2'].font = title_2ft
-ws['A2'].alignment = Alignment(horizontal='center')
-style_range(ws, 'A2:I2', border=thin_border)
-style_range(ws, 'A3:I3', fill=blueFill)
-style_range(ws, 'A4:I4', fill=blueFill)
-
-# make a regex pattern which searchs if data is present in column number 10
-pattern1 = re.compile(r'^\d{3,10}')
-rows_list = []
-'''collect the rows which contain data in rows_list'''
-for row in og_sheet.rows:
-    value1 = str(row[9].value)
-    if re.search(pattern1, value1):
-        '''remove probills start with 'V' if applicable'''
-        if is_import_v:
-            rows_list.append(row)
-        else:
-            if not str(row[20].value).lower().startswith('v'):
-                rows_list.append(row)
-
-old_row_list = []
-'''get data from old sheet'''
-for row in old_ws:
-    value1 = str(row[1].value)
-    if re.search(pattern1, value1):
-        old_row_list.append(row)
-
-    # '''check for M at the end of trips (manually added) and add it to the new records rows_list'''
-    # if row[1].value[-1].lower() == 'm':
-    #     rows_list.append(row)
-
-'''fix microseconds bug in excel sheet for stringformattime'''
-colQ = og_sheet['Q']
-fix_pat = re.compile(r'\d\d:\d\d:\d\d$')
-for cell in colQ:
-    if re.search(fix_pat, str(og_sheet[cell.coordinate].value)):
-        og_sheet[cell.coordinate] = str(og_sheet[cell.coordinate].value) + '.000000'
-colK = og_sheet['K']
-fix_pat = re.compile(r'\d\d:\d\d:\d\d$')
-
-for cell in colK:
-    if re.search(fix_pat, str(og_sheet[cell.coordinate].value)):
-        og_sheet[cell.coordinate] = str(og_sheet[cell.coordinate].value) + '.000000'
-
-pickupdate_index = 10
-deliverydate_index = 16
-
-dates = []
-
-'''parse unique dates from Delivery dates'''
-
-
-def get_dates():
-    global dates
-    pt3 = re.compile(r'^\d{4}-\d\d-\d\d')
-    for row in rows_list:
-        z = re.match(pt3, str(row[deliverydate_index].value))
-        date_extracted = z.group(0)
-        if date_extracted not in dates:
-            dates.append(date_extracted)
-
-
-get_dates()
-
-#    queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[pickupdate_index].value), '%A, %B %d, %Y @ %H:%M'))
-
-dates.sort(key=lambda x: datetime.datetime.strptime(str(x), '%Y-%m-%d'))
-
-current_row = 5
-
-'''date necessary format'''
-for row in rows_list:
-    dt3 = datetime.datetime.strptime(str(row[pickupdate_index].value), '%Y-%m-%d  %H:%M:%S.%f')
-    row[pickupdate_index].value = dt3.strftime('%A, %B %d, %Y @ %H:%M')
-    dt3 = datetime.datetime.strptime(str(row[deliverydate_index].value), '%Y-%m-%d  %H:%M:%S.%f')
-    row[deliverydate_index].value = dt3.strftime('%A, %B %d, %Y @ %H:%M')
-
 
 def each_date(date):
     global lol
     queue_list = []
     '''Add all rows in new rowlist with this date'''
     for row_q1 in rows_list:
-        dt6 = datetime.datetime.strptime(date, '%Y-%m-%d')
+        dt6 = datetime.datetime.strptime(date, '%m/%d/%Y')
         match_date = dt6.strftime('%A, %B %d, %Y')
         if match_date in str(row_q1[deliverydate_index].value):
             queue_list.append(row_q1)
@@ -262,7 +202,7 @@ def each_date(date):
         old_queue_list = []
         '''Add all rows in new rowlist with this date'''
         for row_q1 in old_row_list:
-            dt6 = datetime.datetime.strptime(date, '%Y-%m-%d')
+            dt6 = datetime.datetime.strptime(date, '%m/%d/%Y')
             match_date = dt6.strftime('%A, %B %d, %Y')
             if match_date in str(row_q1[5].value):
                 old_queue_list.append(row_q1)
@@ -272,61 +212,62 @@ def each_date(date):
 
         '''manipulation op'''
         for new_row in queue_list:
-            new_trip = new_row[9].value
+            new_trip = new_row[1].value
             for old_row in old_queue_list:
                 if old_row[1].value == new_trip:
-                    n_pu = new_row[24].value
-                    n_trailer = new_row[25].value
-                    n_status = new_row[28].value
+                    n_pu = new_row[6].value
+                    n_trailer = new_row[7].value
+                    n_status = new_row[8].value
                     o_pu = old_row[6].value
                     o_trailer = old_row[7].value
                     o_status = old_row[8].value
 
                     if not n_pu:
                         n_pu = o_pu
-                        new_row[24].value = n_pu
+                        new_row[6].value = n_pu
                     if not o_trailer:
                         n_trailer = o_trailer
-                        new_row[25].value = n_trailer
+                        new_row[7].value = n_trailer
 
                     status_priority = {'ASSGN': 1,
-                                       'DISP': 2,
-                                       'ATPICK': 3,
-                                       'PICKD': 4,
-                                       'BKRPICKD': 4,
-                                       'BORDER': 5,
-                                       'ENRTE': 6,
-                                       'ATCONS': 7,
-                                       'SP4DEL': 8,
-                                       'SP4OB': 9,
-                                       'SPTLD': 10,
-                                       'DELVD': 11, }
+                                       'CARDED': 2,
+                                       'DISP': 3,
+                                       'ATPICK': 4,
+                                       'PICKD': 5,
+                                       'BKRPICKD': 5,
+                                       'BORDER': 6,
+                                       'ENRTE': 7,
+                                       'ATCONS': 8,
+                                       'SP4DEL': 9,
+                                       'SP4OB': 10,
+                                       'SPTLD': 11,
+                                       'DELVD': 12, }
 
                     if o_status == 'BROKER':
                         n_status = o_status
-                        new_row[28].value = n_status
+                        new_row[8].value = n_status
                     elif status_priority[o_status] > status_priority[n_status]:
                         n_status = o_status
-                        new_row[28].value = n_status
+                        new_row[8].value = n_status
     if old_filename:
         for old_row in old_queue_list:
             lol = []
             '''manual update'''
             if str(old_row[1].value)[-1].lower() == 'm':
 
-                for i in range(29):
+                for i in range(9):
                     cell = og_sheet['AH8']
                     lol.append(cell)
 
-                lol[9] = old_row[1]
-                lol[10] = old_row[3]
-                lol[11] = old_row[2]
-                lol[16] = old_row[5]
-                lol[19] = old_row[4]
-                lol[20] = old_row[0]
-                lol[24] = old_row[6]
-                lol[25] = old_row[7]
-                lol[28] = old_row[8]
+                lol[1] = old_row[1]
+                lol[3] = old_row[3]
+                lol[2] = old_row[2]
+                lol[5] = old_row[5]
+                lol[4] = old_row[4]
+                lol[0] = old_row[0]
+                lol[6] = old_row[6]
+                lol[7] = old_row[7]
+                lol[8] = old_row[8]
                 queue_list.append(lol)
 
     '''sort new rowlist by  pickup'''
@@ -336,7 +277,7 @@ def each_date(date):
     global current_row
 
     '''add heading each day'''
-    dt = datetime.datetime.strptime(date, '%Y-%m-%d')
+    dt = datetime.datetime.strptime(date, '%m/%d/%Y')
     ws[f'A{current_row}'] = dt.strftime('%A, %B %d, %Y')
     ws.merge_cells(f'A{current_row}:I{current_row}')
     style_range(ws, f'A{current_row}:I{current_row}', border=thin_border)
@@ -352,24 +293,24 @@ def each_date(date):
 
     for row_q in queue_list:
         current_row += 1
-        ws[f'D{current_row}'] = row_q[10].value
-        ws[f'C{current_row}'] = row_q[11].value
-        ws[f'E{current_row}'] = row_q[19].value
-        ws[f'F{current_row}'] = row_q[16].value
-        ws[f'B{current_row}'] = row_q[9].value
-        ws[f'A{current_row}'] = row_q[20].value
+        ws[f'D{current_row}'] = row_q[3].value
+        ws[f'C{current_row}'] = row_q[2].value
+        ws[f'E{current_row}'] = row_q[4].value
+        ws[f'F{current_row}'] = row_q[5].value
+        ws[f'B{current_row}'] = row_q[1].value
+        ws[f'A{current_row}'] = row_q[0].value
 
-        ws[f'G{current_row}'] = row_q[24].value
-        if row_q[24].value is None:
+        ws[f'G{current_row}'] = row_q[6].value
+        if row_q[6].value is None:
             ws[f'G{current_row}'].fill = yellowFill
 
-        ws[f'H{current_row}'] = row_q[25].value
-        if row_q[25].value is None:
+        ws[f'H{current_row}'] = row_q[7].value
+        if row_q[7].value is None:
             ws[f'H{current_row}'].fill = yellowFill
 
-        ws[f'I{current_row}'] = row_q[28].value
+        ws[f'I{current_row}'] = row_q[8].value
 
-        status = row_q[28].value
+        status = row_q[8].value
 
         '''color fill'''
         if status == 'ASSGN':
@@ -415,39 +356,179 @@ def each_date(date):
         ws[f'I{current_row}'].alignment = Alignment(horizontal='center')
 
 
-        print(f'-{row_q[16].value}')
+        print(f'-{row_q[5].value}')
 
-print('----------------------------------------------------')
+print('>>Script started!')
 
-for date in dates:
-    print(f'>>Writing data for {date}')
-    each_date(date)
-    current_row += 2
+'''take filename as input and convert csv to xlsx'''
+# og_filename = input('**Report csv file name: ')
+og_filename = 'FBSTATUS'
+csv_to_xlsx(og_filename)
 
-# ws.sheet_view.showGridLines = False
 
-name_ext = str(og_sheet['O1'].value)
-# Tuesday, July 2, 2019 21:43
 
-dt_a1 = datetime.datetime.strptime(name_ext, '%A, %B %d, %Y %H:%M')
-name_ext = dt_a1.strftime('%A_%B_%d_%Y t_%H%M')
-try:
+
+
+"""Open xlsx converted original sheet"""
+og_wb = openpyxl.load_workbook(f'{wd}\\{og_filename}.xlsx')
+# og_sheet = og_wb.active
+
+sheets = og_wb.sheetnames
+for sheet in sheets[1:]:
+    # is_import_v = input('**Want to import probills starting with \'V\'?(Y/N): ')
+    is_import_v = 'Y'
+    # old_filename = input('**Old Dispatch plan file name: ')
+    old_filename = ''
+
+    if old_filename == '':
+        old_filename = None
+
+    if is_import_v.lower() == 'y':
+        is_import_v = True
+    elif is_import_v.lower() == 'n':
+        is_import_v = False
+    else:
+        print(f'>>Invalid input. Please use either Y for Yes or N for No')
+
+    old_ws = ''
+
     if old_filename:
-        wb.save(f'{wd}\\ov_DISPATCH_PLAN {name_ext}.xlsx')
-    elif not is_import_v:
-        wb.save(f'{wd}\\DISPATCH_PLAN {name_ext}_noV.xlsx')
-    elif is_import_v:
-        wb.save(f'{wd}\\DISPATCH_PLAN {name_ext}.xlsx')
+        old_wb = load_workbook(filename=wd + '\\' + old_filename + '.xlsx')
+        old_ws = old_wb.active
+
+    '''instantiate new worksheet to write data into'''
+    wb = Workbook()
+    ws = wb.active
+
+    '''headers dictionary'''
+    dict_headers = {'A': 'PROBILL',  # 0
+                    'B': 'TRIP',  # 1
+                    'C': 'ORIGIN',  # 2
+                    'D': 'PICKUP BY',  # 3
+                    'E': 'DESTINATION',  # 4
+                    'F': 'DELIVER BY',  # 5
+                    'G': 'P/U',  # 6
+                    'H': 'TRAILER',  # 7
+                    'I': 'STATUS'}  # 8
+
+    old_dict_headers = {'J': 'TRIP',  # 9
+                        'K': 'PICKUP BY',  # 10
+                        'L': 'ORIGIN',  # 11
+                        'Q': 'DELIVER BY',  # 16
+                        'T': 'DESTINATION',  # 19
+                        'U': 'PROBILL',  # 20
+                        'Y': 'P/U',  # 24
+                        'Z': 'TRAILER',  # 25
+                        'AC': 'STATUS'}  # 28
+
+    '''setting default width for columns'''
+    ws.column_dimensions['A'].width = 14
+    ws.column_dimensions['B'].width = 13
+    ws.column_dimensions['C'].width = 25
+    ws.column_dimensions['D'].width = 30
+    ws.column_dimensions['E'].width = 25
+    ws.column_dimensions['F'].width = 30
+    ws.column_dimensions['G'].width = 10
+    ws.column_dimensions['H'].width = 10
+    ws.column_dimensions['I'].width = 10
+
+    sheet_title = sheet
+    og_sheet = og_wb[sheet_title]
+    '''merge and format cells'''
+    ws.merge_cells('A1:I1')
+    ws['A1'].value = f'{sheet_title} PLANNER'
+    ws['A1'].font = title_ft
+    ws['A1'].alignment = Alignment(horizontal='center')
+    ws.merge_cells('A2:I2')
+    now_date = datetime.datetime.now()
+    ws['A2'].value = now_date.strftime('%A, %B %d, %Y %H:%M')
+    ws['A2'].font = title_2ft
+    ws['A2'].alignment = Alignment(horizontal='center')
+
+    # make a regex pattern which searchs if data is present in column number 10
+    pattern1 = re.compile(r'^\d{3,10}')
+    rows_list = []
+    '''collect the rows which contain data in rows_list'''
+    for row in og_sheet.rows:
+        value1 = str(row[1].value)
+        if re.search(pattern1, value1):
+            '''remove probills start with 'V' if applicable'''
+            if is_import_v:
+                rows_list.append(row)
+            else:
+                if not str(row[0].value).lower().startswith('v'):
+                    rows_list.append(row)
+
+    old_row_list = []
+    '''get data from old sheet'''
+    for row in old_ws:
+        value1 = str(row[1].value)
+        if re.search(pattern1, value1):
+            old_row_list.append(row)
 
 
-except PermissionError:
-    print(
-        f'>>ERROR!! You did not close the file "DISPATCH_PLAN {name_ext}.xlsx" can\'t write to it while it\'s still open')
-    sys.exit()
+    pickupdate_index = 3
+    deliverydate_index = 5
 
-os.system(f'del "{wd}\\xlsx_{og_filename}.xlsx"')
+    dates = []
 
-if old_filename:
-    print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "ov_DISPATCH_PLAN {name_ext}.xlsx"')
-else:
-    print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "DISPATCH_PLAN {name_ext}.xlsx"')
+    get_dates()
+
+
+
+    dates.sort(key=lambda x: datetime.datetime.strptime(str(x), '%m/%d/%Y'))
+
+    current_row = 4
+    date_without_time_regex = re.compile(r'\d{4}$')
+    '''add HH:MM to date if not present'''
+    for row in rows_list:
+        pick_dt = row[pickupdate_index].value
+        del_dt = row[deliverydate_index].value
+        if re.search(date_without_time_regex, pick_dt):
+            row[pickupdate_index].value = str(row[pickupdate_index].value) + ' 00:00:00'
+        if re.search(date_without_time_regex, del_dt):
+            row[deliverydate_index].value = str(row[deliverydate_index].value) + ' 00:00:00'
+
+    '''date necessary format'''
+    for row in rows_list:
+        dt3 = datetime.datetime.strptime(str(row[pickupdate_index].value), '%m/%d/%Y %H:%M:%S')
+        row[pickupdate_index].value = dt3.strftime('%A, %B %d, %Y @ %H:%M')
+        dt3 = datetime.datetime.strptime(str(row[deliverydate_index].value), '%m/%d/%Y %H:%M:%S')
+        row[deliverydate_index].value = dt3.strftime('%A, %B %d, %Y @ %H:%M')
+
+    print('----------------------------------------------------')
+
+    for date in dates:
+        print(f'>>Writing data for {date}')
+        each_date(date)
+        current_row += 2
+
+    # ws.sheet_view.showGridLines = False
+
+    name_ext = now_date.strftime('%A, %B %d, %Y %H:%M')
+    # Tuesday, July 2, 2019 21:43
+
+    dt_a1 = datetime.datetime.strptime(name_ext, '%A, %B %d, %Y %H:%M')
+    name_ext = dt_a1.strftime('%A_%B_%d_%Y t_%H%M')
+    name_ext = f'{sheet_title}_{name_ext}'
+    try:
+        if old_filename:
+            wb.save(f'{wd}\\ov_DISPATCH_PLAN {name_ext}.xlsx')
+        elif not is_import_v:
+            wb.save(f'{wd}\\DISPATCH_PLAN {name_ext}_noV.xlsx')
+        elif is_import_v:
+            wb.save(f'{wd}\\DISPATCH_PLAN {name_ext}.xlsx')
+
+
+    except PermissionError:
+        print(
+            f'>>ERROR!! You did not close the file "DISPATCH_PLAN {name_ext}.xlsx" can\'t write to it while it\'s still open')
+        sys.exit()
+
+
+    if old_filename:
+        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "ov_DISPATCH_PLAN {name_ext}.xlsx"')
+    else:
+        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "DISPATCH_PLAN {name_ext}.xlsx"')
+
+    print('=============================================================================================================')
