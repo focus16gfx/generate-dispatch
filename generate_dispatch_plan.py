@@ -361,8 +361,8 @@ def each_date(date):
 print('>>Script started!')
 
 '''take filename as input and convert csv to xlsx'''
-# og_filename = input('**Report csv file name: ')
-og_filename = 'FBSTATUS'
+og_filename = input('**Report csv file name: ')
+# og_filename = 'FBSTATUS'
 csv_to_xlsx(og_filename)
 
 
@@ -377,8 +377,8 @@ sheets = og_wb.sheetnames
 for sheet in sheets[1:]:
     # is_import_v = input('**Want to import probills starting with \'V\'?(Y/N): ')
     is_import_v = 'Y'
-    # old_filename = input('**Old Dispatch plan file name: ')
-    old_filename = ''
+    old_filename = input('**Old Dispatch plan file name: ')
+    # old_filename = ''
 
     if old_filename == '':
         old_filename = None
