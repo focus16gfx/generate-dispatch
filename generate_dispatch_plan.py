@@ -10,8 +10,8 @@ import csv
 from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
 print('>>Initialising...')
-wd = os.getcwd()
-# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+#wd = os.getcwd()
+wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -30,7 +30,8 @@ ATPICKFill = PatternFill(start_color='FFffff00', end_color='FFffff00', fill_type
 PICKDFill = PatternFill(start_color='FF008000', end_color='FF008000', fill_type='solid')
 BKRPICKDFill = PatternFill(start_color='FFff00ff', end_color='FFff00ff', fill_type='solid')
 BORDERFill = PatternFill(start_color='FF000000', end_color='FF000000', fill_type='solid')
-ENRTEFill = PatternFill(start_color='FF800080', end_color='FF800080', fill_type='solid')
+ENRTEFill = PatternFill(start_color='FF9e379f', end_color='FF800080', fill_type='solid')
+CARDEDFill = PatternFill(start_color='FF60a1f0', end_color='FF800080', fill_type='solid')
 ATCONSFill = PatternFill(start_color='FF0000ff', end_color='FF0000ff', fill_type='solid')
 SP4DELFill = PatternFill(start_color='FF4b0082', end_color='FF4b0082', fill_type='solid')
 SP4OBFill = PatternFill(start_color='FFee82ee', end_color='FFee82ee', fill_type='solid')
@@ -332,6 +333,9 @@ def each_date(date):
             ws[f'I{current_row}'].fill = BKRPICKDFill
         elif status == 'BORDER':
             ws[f'I{current_row}'].fill = BORDERFill
+
+        elif status == 'CARDED':
+            ws[f'I{current_row}'].fill = CARDEDFill
 
         elif status == 'ENRTE':
             # ws[f'I{current_row}'].fill = ENRTEFill
