@@ -557,7 +557,7 @@ for sheet in sheets[1:]:
     out_fn = f'DISPATCH_PLAN_{name_ext}'
     folder = 'Output\\'
     try:
-        os.mkdir(folder[:-1])
+        os.mkdir(f'{wd}\\{folder[:-1]}')
     except FileExistsError:
         pass
     try:
