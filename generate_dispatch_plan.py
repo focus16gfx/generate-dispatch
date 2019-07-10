@@ -547,24 +547,30 @@ for sheet in sheets[1:]:
     dt_a1 = datetime.datetime.strptime(name_ext, '%A, %B %d, %Y %H:%M')
     name_ext = dt_a1.strftime('%A_%B_%d_%Y t_%H%M')
     name_ext = f'{sheet_title}_{name_ext}'
+    out_fn = f'DISPATCH_PLAN_{name_ext}'
+    folder = 'Output\\'
+    try:
+        os.mkdir(folder[:-1])
+    except FileExistsError:
+        pass
     try:
         if old_filename:
-            wb.save(f'{wd}\\ov_DISPATCH_PLAN_{name_ext}.xlsx')
+            wb.save(f'{wd}\\{folder}ov_{out_fn}.xlsx')
         elif not is_import_v:
-            wb.save(f'{wd}\\DISPATCH_PLAN_{name_ext}_noV.xlsx')
+            wb.save(f'{wd}\\{folder}{out_fn}_noV.xlsx')
         elif is_import_v:
-            wb.save(f'{wd}\\DISPATCH_PLAN_{name_ext}.xlsx')
+            wb.save(f'{wd}\\{folder}{out_fn}.xlsx')
 
 
     except PermissionError:
         print(
-            f'>>ERROR!! You did not close the file "DISPATCH_PLAN_{name_ext}.xlsx" can\'t write to it while it\'s still open')
+            f'>>ERROR!! You did not close the .xlsx file. can\'t write to it while it\'s still open')
         sys.exit()
 
 
     if old_filename:
-        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "ov_DISPATCH_PLAN_{name_ext}.xlsx"')
+        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved in "{folder}ov_{out_fn}.xlsx"')
     else:
-        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "DISPATCH_PLAN_{name_ext}.xlsx"')
+        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved in "{folder}{out_fn}.xlsx"')
 
     print('=============================================================================================================')
