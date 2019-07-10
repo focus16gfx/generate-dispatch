@@ -168,6 +168,7 @@ def csv_to_xlsx(og_filename):
     og_ws_BC2AB = create_orig_dest_sheet(og_wb, 'BC', 'AB')
     og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'AB', 'BC')
     og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'CA', 'BC')
+    og_ws_WA2BC = create_orig_dest_sheet(og_wb, 'WA', 'BC')
     og_ws_Everywhere2BC = create_orig_dest_sheet(og_wb, destination='BC', origin_everywhere=True)
     '''get all sheet names'''
     sheets = og_wb.sheetnames
@@ -548,22 +549,22 @@ for sheet in sheets[1:]:
     name_ext = f'{sheet_title}_{name_ext}'
     try:
         if old_filename:
-            wb.save(f'{wd}\\ov_DISPATCH_PLAN {name_ext}.xlsx')
+            wb.save(f'{wd}\\ov_DISPATCH_PLAN_{name_ext}.xlsx')
         elif not is_import_v:
-            wb.save(f'{wd}\\DISPATCH_PLAN {name_ext}_noV.xlsx')
+            wb.save(f'{wd}\\DISPATCH_PLAN_{name_ext}_noV.xlsx')
         elif is_import_v:
-            wb.save(f'{wd}\\DISPATCH_PLAN {name_ext}.xlsx')
+            wb.save(f'{wd}\\DISPATCH_PLAN_{name_ext}.xlsx')
 
 
     except PermissionError:
         print(
-            f'>>ERROR!! You did not close the file "DISPATCH_PLAN {name_ext}.xlsx" can\'t write to it while it\'s still open')
+            f'>>ERROR!! You did not close the file "DISPATCH_PLAN_{name_ext}.xlsx" can\'t write to it while it\'s still open')
         sys.exit()
 
 
     if old_filename:
-        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "ov_DISPATCH_PLAN {name_ext}.xlsx"')
+        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "ov_DISPATCH_PLAN_{name_ext}.xlsx"')
     else:
-        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "DISPATCH_PLAN {name_ext}.xlsx"')
+        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved as "DISPATCH_PLAN_{name_ext}.xlsx"')
 
     print('=============================================================================================================')
