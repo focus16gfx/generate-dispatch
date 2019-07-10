@@ -10,8 +10,8 @@ import csv
 from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
 print('>>Initialising...')
-#wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -79,9 +79,15 @@ def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment
                 c.fill = fill
 
 
-def create_orig_dest_sheet(origin, destination, og_wb):
+def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=False, destination_everywhere=False):
     og_ws_main = og_wb.active
-    og_ws_O2D = og_wb.create_sheet(f'{origin} to {destination}')
+    if origin_everywhere:
+        og_ws_O2D = og_wb.create_sheet(f'Everywhere to {destination}')
+    if destination_everywhere:
+        og_ws_O2D = og_wb.create_sheet(f'{origin} to Everywhere')
+
+    if not origin_everywhere and not destination_everywhere:
+        og_ws_O2D = og_wb.create_sheet(f'{origin} to {destination}')
 
     '''write headers'''
     for i in range(10):
@@ -96,14 +102,32 @@ def create_orig_dest_sheet(origin, destination, og_wb):
     for row in list(og_ws_main.rows)[2:]:
         origin_pr = row[2].value[-3:].replace(' ', '')
         destination_pr = row[4].value[-3:].replace(' ', '')
+        if origin_everywhere:
+            if destination_pr == destination:
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+                prev_trip = current_trip
 
-        if origin_pr == origin and destination_pr == destination:
-            """skip rows with same trip as last trip"""
-            current_trip = row[1].value
-            if current_trip == prev_trip:
-                O2D_rows.pop(-1)
-            O2D_rows.append(row)
-            prev_trip = current_trip
+        if destination_everywhere:
+            if origin_pr == origin:
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+                prev_trip = current_trip
+
+        if not origin_everywhere and not destination_everywhere:
+            if origin_pr == origin and destination_pr == destination:
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+                prev_trip = current_trip
 
 
 
@@ -141,10 +165,10 @@ def csv_to_xlsx(og_filename):
             if cellu.value.replace(' ', '') == '<null>':
                 cellu.value = ''
 
-
-    og_ws_BC2AB = create_orig_dest_sheet('BC', 'AB', og_wb)
-    og_ws_AB2BC = create_orig_dest_sheet('AB', 'BC', og_wb)
-
+    og_ws_BC2AB = create_orig_dest_sheet(og_wb, 'BC', 'AB')
+    og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'AB', 'BC')
+    og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'CA', 'BC')
+    og_ws_Everywhere2BC = create_orig_dest_sheet(og_wb, destination='BC', origin_everywhere=True)
     '''get all sheet names'''
     sheets = og_wb.sheetnames
 
