@@ -10,8 +10,8 @@ import csv
 from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -129,6 +129,17 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 O2D_rows.append(row)
                 prev_trip = current_trip
 
+        ##########special case, WA-->AB in everywhere -->BC
+        #destination='BC', origin_everywhere=True
+        if destination == 'BC' and origin_everywhere:
+            if origin_pr == 'WA' and destination_pr == 'AB':
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+                prev_trip = current_trip
+
 
 
 
@@ -210,7 +221,7 @@ def write_headers(row_num, fontyy=ft):
         ws[coord + str(row_num)].font = fontyy
         ws[coord + str(row_num)].fill = lightblueFill
         ws[coord + str(row_num)].alignment = Alignment(horizontal='center')
-    style_range(ws, f'A{row_num}:I{row_num}', border=thin_allborder)
+    style_range(ws, f'A{row_num}:J{row_num}', border=thin_allborder)
 
 
 def each_date(date):
@@ -312,8 +323,8 @@ def each_date(date):
     '''add heading each day'''
     dt = datetime.datetime.strptime(date, '%m/%d/%Y')
     ws[f'A{current_row}'] = dt.strftime('%A, %B %d, %Y')
-    ws.merge_cells(f'A{current_row}:I{current_row}')
-    style_range(ws, f'A{current_row}:I{current_row}', border=thin_border)
+    ws.merge_cells(f'A{current_row}:J{current_row}')
+    style_range(ws, f'A{current_row}:J{current_row}', border=thin_border)
     ws[f'A{current_row}'].font = ft
     current_row += 1
     write_headers(current_row, ft_small)
@@ -321,7 +332,7 @@ def each_date(date):
     '''write sorted list of rows to excel'''
     print('PICKUP DATES...')
 
-    style_range(ws, f'A{current_row}:I{current_row + len(queue_list)}', border=thin_allborder)
+    style_range(ws, f'A{current_row}:J{current_row + len(queue_list)}', border=thin_allborder)
 
 
     for row_q in queue_list:
@@ -445,7 +456,8 @@ for sheet in sheets[1:]:
                     'F': 'DELIVER BY',  # 5
                     'G': 'P/U',  # 6
                     'H': 'TRAILER',  # 7
-                    'I': 'STATUS'}  # 8
+                    'I': 'STATUS',
+                    'J': 'NOTES'}  # 8
 
     old_dict_headers = {'J': 'TRIP',  # 9
                         'K': 'PICKUP BY',  # 10
@@ -461,12 +473,13 @@ for sheet in sheets[1:]:
     ws.column_dimensions['A'].width = 14
     ws.column_dimensions['B'].width = 13
     ws.column_dimensions['C'].width = 25
-    ws.column_dimensions['D'].width = 30
+    ws.column_dimensions['D'].width = 35
     ws.column_dimensions['E'].width = 25
-    ws.column_dimensions['F'].width = 30
+    ws.column_dimensions['F'].width = 35
     ws.column_dimensions['G'].width = 10
     ws.column_dimensions['H'].width = 10
     ws.column_dimensions['I'].width = 10
+    ws.column_dimensions['J'].width = 10
 
     sheet_title = sheet
     og_sheet = og_wb[sheet_title]
@@ -502,10 +515,8 @@ for sheet in sheets[1:]:
         if re.search(pattern1, value1):
             old_row_list.append(row)
 
-
     pickupdate_index = 3
     deliverydate_index = 5
-
     dates = []
 
     get_dates()
