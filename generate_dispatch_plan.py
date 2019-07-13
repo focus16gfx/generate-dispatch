@@ -10,8 +10,8 @@ import csv
 from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
 print('>>Initialising...')
-wd = os.getcwd()
-# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+# wd = os.getcwd()
+wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
