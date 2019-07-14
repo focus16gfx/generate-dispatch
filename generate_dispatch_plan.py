@@ -9,9 +9,11 @@ import sys
 import csv
 from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 
+pickupdate_index = 3
+deliverydate_index = 5
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -130,7 +132,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 prev_trip = current_trip
 
         ##########special case, WA-->AB in everywhere -->BC
-        #destination='BC', origin_everywhere=True
+        # destination='BC', origin_everywhere=True
         if destination == 'BC' and origin_everywhere:
             if origin_pr == 'WA' and destination_pr == 'AB':
                 """skip rows with same trip as last trip"""
@@ -139,7 +141,6 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                     O2D_rows.pop(-1)
                 O2D_rows.append(row)
                 prev_trip = current_trip
-
 
 
 
@@ -205,11 +206,11 @@ def csv_to_xlsx(og_filename):
 '''parse unique dates from Delivery dates'''
 
 
-def get_dates():
+def get_dates(group_by=deliverydate_index):
     global dates
     pt3 = re.compile(r'^\d{1,2}/\d{1,2}/\d{4}')
     for row in rows_list:
-        date_extracted = re.match(pt3, str(row[deliverydate_index].value)).group(0)
+        date_extracted = re.match(pt3, str(row[group_by].value)).group(0)
         if date_extracted not in dates:
             dates.append(date_extracted)
 
@@ -224,14 +225,14 @@ def write_headers(row_num, fontyy=ft):
     style_range(ws, f'A{row_num}:J{row_num}', border=thin_allborder)
 
 
-def each_date(date):
+def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
     global lol
     queue_list = []
     '''Add all rows in new rowlist with this date'''
     for row_q1 in rows_list:
         dt6 = datetime.datetime.strptime(date, '%m/%d/%Y')
         match_date = dt6.strftime('%A, %B %d, %Y')
-        if match_date in str(row_q1[deliverydate_index].value):
+        if match_date in str(row_q1[group_by].value):
             queue_list.append(row_q1)
 
     if old_filename:
@@ -241,11 +242,11 @@ def each_date(date):
         for row_q1 in old_row_list:
             dt6 = datetime.datetime.strptime(date, '%m/%d/%Y')
             match_date = dt6.strftime('%A, %B %d, %Y')
-            if match_date in str(row_q1[5].value):
+            if match_date in str(row_q1[group_by].value):
                 old_queue_list.append(row_q1)
 
         '''sort new rowlist by pickup'''
-        old_queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[3].value), '%A, %B %d, %Y @ %H:%M'))
+        old_queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[sort_by].value), '%A, %B %d, %Y @ %H:%M'))
 
         '''manipulation op'''
         for new_row in queue_list:
@@ -316,7 +317,7 @@ def each_date(date):
 
     '''sort new rowlist by  pickup'''
 
-    queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[pickupdate_index].value), '%A, %B %d, %Y @ %H:%M'))
+    queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[sort_by].value), '%A, %B %d, %Y @ %H:%M'))
 
     global current_row
 
@@ -456,8 +457,8 @@ for sheet in sheets[1:]:
                     'F': 'DELIVER BY',  # 5
                     'G': 'P/U',  # 6
                     'H': 'TRAILER',  # 7
-                    'I': 'STATUS',
-                    'J': 'NOTES'}  # 8
+                    'I': 'STATUS',  #8
+                    'J': 'NOTES'}  # 9
 
     old_dict_headers = {'J': 'TRIP',  # 9
                         'K': 'PICKUP BY',  # 10
@@ -484,11 +485,11 @@ for sheet in sheets[1:]:
     sheet_title = sheet
     og_sheet = og_wb[sheet_title]
     '''merge and format cells'''
-    ws.merge_cells('A1:I1')
+    ws.merge_cells('A1:J1')
     ws['A1'].value = f'{sheet_title} PLANNER'
     ws['A1'].font = title_ft
     ws['A1'].alignment = Alignment(horizontal='center')
-    ws.merge_cells('A2:I2')
+    ws.merge_cells('A2:J2')
     now_date = datetime.datetime.now()
     ws['A2'].value = now_date.strftime('%A, %B %d, %Y %H:%M')
     ws['A2'].font = title_2ft
@@ -515,11 +516,13 @@ for sheet in sheets[1:]:
         if re.search(pattern1, value1):
             old_row_list.append(row)
 
-    pickupdate_index = 3
-    deliverydate_index = 5
     dates = []
-
-    get_dates()
+    if sheet_title == 'AB to BC':
+        group_by = pickupdate_index
+        sort_by = deliverydate_index
+        get_dates(group_by)
+    else:
+        get_dates()
 
 
 
@@ -547,7 +550,12 @@ for sheet in sheets[1:]:
 
     for date in dates:
         print(f'>>Writing data for {date}')
-        each_date(date)
+        if sheet_title == 'AB to BC':
+            group_by = pickupdate_index
+            sort_by = deliverydate_index
+            each_date(date, group_by, sort_by)
+        else:
+            each_date(date)
         current_row += 2
 
     # ws.sheet_view.showGridLines = False
@@ -561,7 +569,7 @@ for sheet in sheets[1:]:
     out_fn = f'DISPATCH_PLAN_{name_ext}'
     folder = 'Output\\'
     try:
-        os.mkdir(folder[:-1])
+        os.mkdir(f'{wd}\\{folder[:-1]}')
     except FileExistsError:
         pass
     try:
