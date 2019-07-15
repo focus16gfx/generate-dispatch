@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -229,6 +229,7 @@ def write_headers(row_num, fontyy=ft):
 def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
     global lol
     queue_list = []
+    queue_list = []
     '''Add all rows in new rowlist with this date'''
     for row_q1 in rows_list:
         dt6 = datetime.datetime.strptime(date, '%m/%d/%Y')
@@ -257,12 +258,13 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                     n_pu = new_row[6].value
                     n_trailer = new_row[7].value
                     n_status = new_row[8].value
-                    n_probill = new_row[0]
+                    n_probill = new_row[0].value
+                    n_notes = new_row[9].value
                     o_pu = old_row[6].value
                     o_trailer = old_row[7].value
                     o_status = old_row[8].value
                     o_probill = old_row[0].value
-
+                    o_notes = old_row[9].value
                     if not n_pu:
                         n_pu = o_pu
                         new_row[6].value = n_pu
@@ -271,7 +273,15 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                         new_row[7].value = n_trailer
                     if not n_probill:
                         n_probill = o_probill
-                        new_row[0] = n_probill
+                        new_row[0].value = n_probill
+
+                    n_notes = o_notes
+                    new_row[9].value = n_notes
+                    # ##add all notes from old document
+                    # try:
+                    #     new_row[9] = old_row[9].value
+                    # except TypeError:
+                    #     new_row[9] = ''
 
                     prior_list = ['ASSGN', 'DISP', 'ATPICK', 'PICKD', 'BKRPICKD', 'BORDER', 'ENRTE', 'ATCONS', 'SP4DEL', 'SP4OB', 'CARDED', 'SPTLD', 'DELVD']
                     status_priority = {}
@@ -504,6 +514,11 @@ for sheet in sheets[1:]:
     ws['A2'].font = title_2ft
     ws['A2'].alignment = Alignment(horizontal='center')
 
+
+    ##delete FBSTATUS Column
+    for cell in og_sheet['J']:
+        cell.value = ''
+
     # make a regex pattern which searchs if data is present in column number 10
     pattern1 = re.compile(r'^\d{3,10}')
     rows_list = []
@@ -517,6 +532,7 @@ for sheet in sheets[1:]:
             else:
                 if not str(row[0].value).lower().startswith('v'):
                     rows_list.append(row)
+
 
     old_row_list = []
     '''get data from old sheet'''
