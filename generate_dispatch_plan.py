@@ -360,6 +360,8 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
 
         ws[f'I{current_row}'] = row_q[8].value
 
+        ws[f'J{current_row}'] = row_q[9].value
+
         status = row_q[8].value
 
         '''color fill'''
