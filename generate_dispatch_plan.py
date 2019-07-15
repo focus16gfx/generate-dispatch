@@ -1,7 +1,7 @@
 from openpyxl import Workbook, load_workbook
 import openpyxl
 from openpyxl.styles.borders import BORDER_THIN, BORDER_THICK
-from openpyxl.styles import Border, Side, PatternFill, Font, Alignment
+from openpyxl.styles import Border, Side, PatternFill, Font, Alignment, colors
 import datetime
 import re
 import os
@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-wd = os.getcwd()
-# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+# wd = os.getcwd()
+wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -51,6 +51,7 @@ thick_border = Border(bottom=Side(border_style=BORDER_THICK, color='00000000'),
 '''create font objects for different text fields'''
 ft = Font(bold=True, size=15)
 ft_small = Font(bold=True)
+ft_white = Font(color=colors.WHITE)
 title_ft = Font(bold=True, size=25)
 title_2ft = Font(bold=True, size=20)
 
@@ -133,7 +134,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
 
         ##########special case, WA-->AB in everywhere -->BC
         # destination='BC', origin_everywhere=True
-        if destination == 'BC' and origin_everywhere:
+        if origin == 'BC' and destination == "AB":
             if origin_pr == 'WA' and destination_pr == 'AB':
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
@@ -272,21 +273,25 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                         n_probill = o_probill
                         new_row[0] = n_probill
 
+                    prior_list = ['ASSGN', 'DISP', 'ATPICK', 'PICKD', 'BKRPICKD', 'BORDER', 'ENRTE', 'ATCONS', 'CARDED', 'SP4DEL', 'SP4OB', 'SPTLD', 'DELVD']
+                    status_priority = {}
+                    for priority_index, status in enumerate(prior_list, start=1):
+                        status_priority[status] = priority_index
 
 
-                    status_priority = {'ASSGN': 1,
-                                       'CARDED': 2,
-                                       'DISP': 3,
-                                       'ATPICK': 4,
-                                       'PICKD': 5,
-                                       'BKRPICKD': 5,
-                                       'BORDER': 6,
-                                       'ENRTE': 7,
-                                       'ATCONS': 8,
-                                       'SP4DEL': 9,
-                                       'SP4OB': 10,
-                                       'SPTLD': 11,
-                                       'DELVD': 12, }
+                    # status_priority = {'ASSGN': 1,
+                    #                    'CARDED': 2,
+                    #                    'DISP': 3,
+                    #                    'ATPICK': 4,
+                    #                    'PICKD': 5,
+                    #                    'BKRPICKD': 5,
+                    #                    'BORDER': 6,
+                    #                    'ENRTE': 7,
+                    #                    'ATCONS': 8,
+                    #                    'SP4DEL': 9,
+                    #                    'SP4OB': 10,
+                    #                    'SPTLD': 11,
+                    #                    'DELVD': 12, }
 
                     if o_status == 'BROKER':
                         n_status = o_status
@@ -382,8 +387,10 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
             ws[f'I{current_row}'].fill = ATCONSFill
         elif status == 'SP4DEL':
             ws[f'I{current_row}'].fill = SP4DELFill
+            ws[f'I{current_row}'].font = ft_white
         elif status == 'SP4OB':
             ws[f'I{current_row}'].fill = SP4OBFill
+            ws[f'I{current_row}'].font = ft_white
         elif status == 'SPTLD':
             ws[f'I{current_row}'].fill = SPTLDFill
 
