@@ -273,7 +273,7 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                         n_probill = o_probill
                         new_row[0] = n_probill
 
-                    prior_list = ['ASSGN', 'DISP', 'ATPICK', 'PICKD', 'BKRPICKD', 'BORDER', 'ENRTE', 'ATCONS', 'CARDED', 'SP4DEL', 'SP4OB', 'SPTLD', 'DELVD']
+                    prior_list = ['ASSGN', 'DISP', 'ATPICK', 'PICKD', 'BKRPICKD', 'BORDER', 'ENRTE', 'ATCONS', 'SP4DEL', 'SP4OB', 'CARDED', 'SPTLD', 'DELVD']
                     status_priority = {}
                     for priority_index, status in enumerate(prior_list, start=1):
                         status_priority[status] = priority_index
