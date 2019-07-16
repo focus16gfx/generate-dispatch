@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -22,6 +22,7 @@ yellowFill = PatternFill(start_color='FFFFFF00', end_color='FFFFFF00', fill_type
 greenFill = PatternFill(start_color='FF00cc00', end_color='FF006600', fill_type='solid')
 blueFill = PatternFill(start_color='FF0099ff', end_color='FF0099ff', fill_type='solid')
 lightblueFill = PatternFill(start_color='FFC5D9F1', end_color='FFC5D9F1', fill_type='solid')
+blackFill = PatternFill(start_color=colors.BLACK, end_color=colors.BLACK, fill_type='solid')
 
 # --------------------------------------------------------------------------------
 
@@ -105,6 +106,9 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
     for row in list(og_ws_main.rows)[2:]:
         origin_pr = row[2].value[-3:].replace(' ', '')
         destination_pr = row[4].value[-3:].replace(' ', '')
+        origin_full = row[2].value
+        destination_full = row[4].value
+
         if origin_everywhere:
             if destination_pr == destination:
                 """skip rows with same trip as last trip"""
@@ -132,6 +136,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 O2D_rows.append(row)
                 prev_trip = current_trip
 
+        '''SPECIAL CASES BELOWWW'''
         ##########special case, WA-->AB in everywhere -->BC
         # destination='BC', origin_everywhere=True
         if origin == 'BC' and destination == "AB":
@@ -142,6 +147,16 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                     O2D_rows.pop(-1)
                 O2D_rows.append(row)
                 prev_trip = current_trip
+        #Just the "Wayfair Perris, CA" or "Perris, CA" to "Genelle, BC"
+            if origin_full in ['Wayfair Perris, CA', 'Perris, CA'] and destination_full == 'Genelle, BC':
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+                prev_trip = current_trip
+
+
 
 
 
@@ -289,19 +304,7 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                         status_priority[status] = priority_index
 
 
-                    # status_priority = {'ASSGN': 1,
-                    #                    'CARDED': 2,
-                    #                    'DISP': 3,
-                    #                    'ATPICK': 4,
-                    #                    'PICKD': 5,
-                    #                    'BKRPICKD': 5,
-                    #                    'BORDER': 6,
-                    #                    'ENRTE': 7,
-                    #                    'ATCONS': 8,
-                    #                    'SP4DEL': 9,
-                    #                    'SP4OB': 10,
-                    #                    'SPTLD': 11,
-                    #                    'DELVD': 12, }
+
 
                     if o_status == 'BROKER':
                         n_status = o_status
@@ -315,7 +318,7 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
             '''manual update'''
             if str(old_row[1].value)[-1].lower() == 'm':
 
-                for i in range(9):
+                for i in range(10):
                     cell = og_sheet['AH8']
                     lol.append(cell)
 
@@ -387,6 +390,8 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
             ws[f'I{current_row}'].fill = BKRPICKDFill
         elif status == 'BORDER':
             ws[f'I{current_row}'].fill = BORDERFill
+            ws[f'I{current_row}'].font = ft_white
+
 
         elif status == 'CARDED':
             ws[f'I{current_row}'].fill = CARDEDFill
@@ -402,12 +407,19 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
             ws[f'I{current_row}'].font = ft_white
         elif status == 'SP4OB':
             ws[f'I{current_row}'].fill = SP4OBFill
-            ws[f'I{current_row}'].font = ft_white
         elif status == 'SPTLD':
             ws[f'I{current_row}'].fill = SPTLDFill
 
         elif status == 'BROKER':
             style_range(ws, f'A{current_row}:I{current_row}', fill=ENRTEFill)
+
+        elif status == 'DELVD':
+            style_range(ws, f'A{current_row}:I{current_row}', fill=blackFill)
+            columns = ws[f'A{current_row}:I{current_row}']
+            for cell in columns[0]:
+                cell.font = ft_white
+
+
 
 
 
@@ -444,8 +456,16 @@ sheets = og_wb.sheetnames
 for sheet in sheets[1:]:
     # is_import_v = input('**Want to import probills starting with \'V\'?(Y/N): ')
     is_import_v = 'Y'
-    old_filename = input(f'**{sheet} Old Dispatch plan file name: ')
-    # old_filename = ''
+    # old_filename = input(f'**{sheet} Old Dispatch plan file name: ')
+    old_filename = None
+    for file in os.listdir(path=wd):
+        if sheet in file:
+            old_filename = file[:-5]
+            print(f'>>Found {sheet} old dispatch plan, {file}')
+
+    if not old_filename:
+        old_filename = input(f'**{sheet} Old Dispatch plan file name: ')
+
 
     if old_filename == '':
         old_filename = None
