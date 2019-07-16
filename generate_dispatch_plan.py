@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-wd = os.getcwd()
-# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+# wd = os.getcwd()
+wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -440,7 +440,14 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
 print('>>Script started!')
 
 '''take filename as input and convert csv to xlsx'''
-og_filename = input('**Report csv file name: ')
+og_filename = None
+for file in os.listdir(path=wd):
+    if 'EXPORT' in file:
+        og_filename = file[:-4]
+        print(f'>>Found csv Report file, {file}!!')
+        break
+if not og_filename:
+    og_filename = input('**Report csv file name: ')
 # og_filename = 'FBSTATUS'
 csv_to_xlsx(og_filename)
 
@@ -462,6 +469,7 @@ for sheet in sheets[1:]:
         if sheet in file:
             old_filename = file[:-5]
             print(f'>>Found {sheet} old dispatch plan, {file}')
+            break
 
     if not old_filename:
         old_filename = input(f'**{sheet} Old Dispatch plan file name: ')
