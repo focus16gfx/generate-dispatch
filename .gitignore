@@ -1,3 +1,6 @@
 .idea
 extra
 venv
+*.xlsx
+*.csv
+Output

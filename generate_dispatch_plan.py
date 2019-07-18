@@ -136,25 +136,31 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 O2D_rows.append(row)
                 prev_trip = current_trip
 
-        '''SPECIAL CASES BELOWWW'''
+        '''SPECIAL CASES BELOWWW for BC to AB'''
         ##########special case, WA-->AB in everywhere -->BC
-        # destination='BC', origin_everywhere=True
+        # Just the "Wayfair Perris, CA" or "Perris, CA" to "Genelle, BC"
+        # origin='BC', destination=AB
         if origin == 'BC' and destination == "AB":
-            if origin_pr == 'WA' and destination_pr == 'AB':
+            if (origin_pr == 'WA' and destination_pr == 'AB') or (origin_full in ['Wayfair Perris, CA', 'Perris, CA'] and destination_full == 'Genelle, BC'):
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+
+        """SPECIAL CASES BELOWWW FOR AB TO BC"""
+        #AB --> BC + AB --> WA + AB --> CA
+        if origin == 'AB' and destination == 'BC':
+            if (origin_pr == 'AB' and destination_pr == 'WA') or (origin_pr == 'AB' and destination_pr == 'CA'):
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
                     O2D_rows.pop(-1)
                 O2D_rows.append(row)
                 prev_trip = current_trip
-        #Just the "Wayfair Perris, CA" or "Perris, CA" to "Genelle, BC"
-            if origin_full in ['Wayfair Perris, CA', 'Perris, CA'] and destination_full == 'Genelle, BC':
-                """skip rows with same trip as last trip"""
-                current_trip = row[1].value
-                if current_trip == prev_trip:
-                    O2D_rows.pop(-1)
-                O2D_rows.append(row)
-                prev_trip = current_trip
+
+
+
 
 
 
@@ -198,6 +204,8 @@ def csv_to_xlsx(og_filename):
     og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'CA', 'BC')
     og_ws_WA2BC = create_orig_dest_sheet(og_wb, 'WA', 'BC')
     og_ws_Everywhere2BC = create_orig_dest_sheet(og_wb, destination='BC', origin_everywhere=True)
+    og_ws_Everywhere2BC = create_orig_dest_sheet(og_wb, destination='AB', origin_everywhere=True)
+
     '''get all sheet names'''
     sheets = og_wb.sheetnames
 
@@ -272,12 +280,12 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                 if old_row[1].value == new_trip:
                     n_pu = new_row[6].value
                     n_trailer = new_row[7].value
-                    n_status = new_row[8].value
+                    n_status = new_row[8].value.strip()
                     n_probill = new_row[0].value
                     n_notes = new_row[9].value
                     o_pu = old_row[6].value
                     o_trailer = old_row[7].value
-                    o_status = old_row[8].value
+                    o_status = old_row[8].value.strip()
                     o_probill = old_row[0].value
                     o_notes = old_row[9].value
                     if not n_pu:
@@ -303,7 +311,7 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
                     for priority_index, status in enumerate(prior_list, start=1):
                         status_priority[status] = priority_index
 
-
+                                    #'CARDED '
 
 
                     if o_status == 'BROKER':
@@ -527,7 +535,7 @@ for sheet in sheets[1:]:
     ws.column_dimensions['G'].width = 10
     ws.column_dimensions['H'].width = 10
     ws.column_dimensions['I'].width = 10
-    ws.column_dimensions['J'].width = 10
+    ws.column_dimensions['J'].width = 20
 
     sheet_title = sheet
     og_sheet = og_wb[sheet_title]
