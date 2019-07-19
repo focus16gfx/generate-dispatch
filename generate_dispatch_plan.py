@@ -140,30 +140,30 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 O2D_rows.append(row)
                 prev_trip = current_trip
 
-        '''SPECIAL CASES BELOWWW for BC to AB'''
-        ##########special case, WA-->AB in everywhere -->BC
-        # Just the "Wayfair Perris, CA" or "Perris, CA" to "Genelle, BC"
-        # origin='BC', destination=AB
-        if origin == 'BC' and destination == "AB":
-            if (origin_pr == 'WA' and destination_pr == 'AB') or (origin_full in ['Wayfair Perris, CA', 'Perris, CA'] and destination_full == 'Genelle, BC'):
-                """skip rows with same trip as last trip"""
-                current_trip = row[1].value
-                if current_trip == prev_trip:
-                    O2D_rows.pop(-1)
-                O2D_rows.append(row)
-                prev_trip = current_trip
-
-
-        """SPECIAL CASES BELOWWW FOR AB TO BC"""
-        #AB --> BC + AB --> WA + AB --> CA
-        if origin == 'AB' and destination == 'BC':
-            if (origin_pr == 'AB' and destination_pr == 'WA') or (origin_pr == 'AB' and destination_pr == 'CA'):
-                """skip rows with same trip as last trip"""
-                current_trip = row[1].value
-                if current_trip == prev_trip:
-                    O2D_rows.pop(-1)
-                O2D_rows.append(row)
-                prev_trip = current_trip
+        # '''SPECIAL CASES BELOWWW for BC to AB'''
+        # ##########special case, WA-->AB in everywhere -->BC
+        # # Just the "Wayfair Perris, CA" or "Perris, CA" to "Genelle, BC"
+        # # origin='BC', destination=AB
+        # if origin == 'BC' and destination == "AB":
+        #     if (origin_pr == 'WA' and destination_pr == 'AB') or (origin_full in ['Wayfair Perris, CA', 'Perris, CA'] and destination_full == 'Genelle, BC'):
+        #         """skip rows with same trip as last trip"""
+        #         current_trip = row[1].value
+        #         if current_trip == prev_trip:
+        #             O2D_rows.pop(-1)
+        #         O2D_rows.append(row)
+        #         prev_trip = current_trip
+        #
+        #
+        # """SPECIAL CASES BELOWWW FOR AB TO BC"""
+        # #AB --> BC + AB --> WA + AB --> CA
+        # if origin == 'AB' and destination == 'BC':
+        #     if (origin_pr == 'AB' and destination_pr == 'WA') or (origin_pr == 'AB' and destination_pr == 'CA'):
+        #         """skip rows with same trip as last trip"""
+        #         current_trip = row[1].value
+        #         if current_trip == prev_trip:
+        #             O2D_rows.pop(-1)
+        #         O2D_rows.append(row)
+        #         prev_trip = current_trip
 
 
 
