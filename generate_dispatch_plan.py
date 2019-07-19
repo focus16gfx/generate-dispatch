@@ -200,12 +200,15 @@ def csv_to_xlsx(og_filename):
             if cellu.value.replace(' ', '') == '<null>':
                 cellu.value = ''
 
-    og_ws_BC2AB = create_orig_dest_sheet(og_wb, 'BC', 'AB')
-    og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'AB', 'BC')
-    og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'CA', 'BC')
-    og_ws_WA2BC = create_orig_dest_sheet(og_wb, 'WA', 'BC')
+    # og_ws_BC2AB = create_orig_dest_sheet(og_wb, 'BC', 'AB')
+    # og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'AB', 'BC')
+    # og_ws_AB2BC = create_orig_dest_sheet(og_wb, 'CA', 'BC')
+    # og_ws_WA2BC = create_orig_dest_sheet(og_wb, 'WA', 'BC')
     og_ws_Everywhere2BC = create_orig_dest_sheet(og_wb, destination='BC', origin_everywhere=True)
+    og_ws_BC2Everywhere = create_orig_dest_sheet(og_wb, destination_everywhere=True, origin='BC')
     og_ws_Everywhere2BC = create_orig_dest_sheet(og_wb, destination='AB', origin_everywhere=True)
+    og_ws_AB2Everywhere = create_orig_dest_sheet(og_wb, destination_everywhere=True, origin='AB')
+
 
     '''get all sheet names'''
     sheets = og_wb.sheetnames
@@ -583,6 +586,22 @@ for sheet in sheets[1:]:
         group_by = pickupdate_index
         sort_by = deliverydate_index
         get_dates(group_by)
+    elif sheet_title == 'Everywhere to BC':
+        group_by = pickupdate_index
+        sort_by = deliverydate_index
+        get_dates(group_by)
+    elif sheet_title == 'BC to Everywhere':
+        group_by = deliverydate_index
+        sort_by = pickupdate_index
+        get_dates(group_by)
+    elif sheet_title == 'Everywhere to AB':
+        group_by = pickupdate_index
+        sort_by = deliverydate_index
+        get_dates(group_by)
+    elif sheet_title == 'AB to Everywhere':
+        group_by = deliverydate_index
+        sort_by = pickupdate_index
+        get_dates(group_by)
     else:
         get_dates()
 
@@ -615,6 +634,22 @@ for sheet in sheets[1:]:
         if sheet_title == 'AB to BC':
             group_by = pickupdate_index
             sort_by = deliverydate_index
+            each_date(date, group_by, sort_by)
+        elif sheet_title == 'Everywhere to BC':
+            group_by = pickupdate_index
+            sort_by = deliverydate_index
+            each_date(date, group_by, sort_by)
+        elif sheet_title == 'BC to Everywhere':
+            group_by = deliverydate_index
+            sort_by = pickupdate_index
+            each_date(date, group_by, sort_by)
+        elif sheet_title == 'Everywhere to AB':
+            group_by = pickupdate_index
+            sort_by = deliverydate_index
+            each_date(date, group_by, sort_by)
+        elif sheet_title == 'AB to Everywhere':
+            group_by = deliverydate_index
+            sort_by = pickupdate_index
             each_date(date, group_by, sort_by)
         else:
             each_date(date)
