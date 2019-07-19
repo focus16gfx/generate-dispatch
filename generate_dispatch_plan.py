@@ -94,7 +94,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
         og_ws_O2D = og_wb.create_sheet(f'{origin} to {destination}')
 
     '''write headers'''
-    for i in range(10):
+    for i in range(11):
         og_ws_O2D.cell(1, i + 1).value = og_ws_main.cell(1, i + 1).value
         og_ws_O2D.cell(1, i + 1).alignment = Alignment(horizontal='center')
 
@@ -112,6 +112,9 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
         # if str(current_trip) == '721467':
         #     print()
 
+        ###SUPRESS BROKERED LOADS USING K COLUMN. If IT'S EMPTY...NOT BROKERED
+        if len(row[10].value) > 2:
+            continue
 
         if origin_everywhere:
             if destination_pr == destination:
@@ -234,6 +237,7 @@ def csv_to_xlsx(og_filename):
         ws.column_dimensions['H'].width = 10
         ws.column_dimensions['I'].width = 10
         ws.column_dimensions['J'].width = 30
+        ws.column_dimensions['K'].width = 20
 
 
     og_wb.save(f'{wd}\\{og_filename}.xlsx')
@@ -549,11 +553,21 @@ for sheet in sheets[1:]:
     ws.column_dimensions['I'].width = 10
     ws.column_dimensions['J'].width = 20
 
+    """name"""
     sheet_title = sheet
+    origin = sheet_title.split(' ')[0]
+    destination = sheet_title.split(' ')[-1]
+    sheet_title_manipped = sheet_title
+    if origin == 'Everywhere':
+        sheet_title_manipped = f'{destination} Inbound'
+    elif destination == 'Everywhere':
+        sheet_title_manipped = f'{origin} Outbound'
+
+
     og_sheet = og_wb[sheet_title]
     '''merge and format cells'''
     ws.merge_cells('A1:J1')
-    ws['A1'].value = f'{sheet_title} PLANNER'
+    ws['A1'].value = f'{sheet_title_manipped} PLANNER'
     ws['A1'].font = title_ft
     ws['A1'].alignment = Alignment(horizontal='center')
     ws.merge_cells('A2:J2')
@@ -670,7 +684,9 @@ for sheet in sheets[1:]:
 
     dt_a1 = datetime.datetime.strptime(name_ext, '%A, %B %d, %Y %H:%M')
     name_ext = dt_a1.strftime('%A_%B_%d_%Y t_%H%M')
-    name_ext = f'{sheet_title}_{name_ext}'
+
+
+    name_ext = f'{sheet_title_manipped}_{name_ext}'
     out_fn = f'DISPATCH_PLAN_{name_ext}'
     folder = 'Output\\'
     try:
@@ -687,8 +703,7 @@ for sheet in sheets[1:]:
 
 
     except PermissionError:
-        print(
-            f'>>ERROR!! You did not close the .xlsx file. can\'t write to it while it\'s still open')
+        print(f'>>ERROR!! You did not close the .xlsx file. can\'t write to it while it\'s still open')
         sys.exit()
 
 
