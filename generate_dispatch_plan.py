@@ -115,6 +115,10 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
 
         if origin_everywhere:
             if destination_pr == destination:
+                """supress local loads..ex: AB-->AB, BC--> etc"""
+                if origin_pr == destination:
+                    continue
+
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
@@ -124,6 +128,10 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
 
         if destination_everywhere:
             if origin_pr == origin:
+                """supress local loads..ex: AB-->AB, BC--> etc"""
+                if destination_pr == origin:
+                    continue
+
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
