@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -108,6 +108,10 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
         destination_pr = row[4].value[-3:].replace(' ', '')
         origin_full = row[2].value
         destination_full = row[4].value
+        # current_trip = row[1].value
+        # if str(current_trip) == '721467':
+        #     print()
+
 
         if origin_everywhere:
             if destination_pr == destination:
@@ -147,6 +151,8 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 if current_trip == prev_trip:
                     O2D_rows.pop(-1)
                 O2D_rows.append(row)
+                prev_trip = current_trip
+
 
         """SPECIAL CASES BELOWWW FOR AB TO BC"""
         #AB --> BC + AB --> WA + AB --> CA
@@ -158,11 +164,6 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                     O2D_rows.pop(-1)
                 O2D_rows.append(row)
                 prev_trip = current_trip
-
-
-
-
-
 
 
 
