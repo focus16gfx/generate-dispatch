@@ -23,6 +23,8 @@ greenFill = PatternFill(start_color='FF00cc00', end_color='FF006600', fill_type=
 blueFill = PatternFill(start_color='FF0099ff', end_color='FF0099ff', fill_type='solid')
 lightblueFill = PatternFill(start_color='FFC5D9F1', end_color='FFC5D9F1', fill_type='solid')
 blackFill = PatternFill(start_color=colors.BLACK, end_color=colors.BLACK, fill_type='solid')
+lightPurpleFill = PatternFill(start_color='FFB1A0C7', end_color='FFB1A0C7', fill_type='solid')
+#B1A0C7
 
 # --------------------------------------------------------------------------------
 
@@ -55,6 +57,7 @@ ft_small = Font(bold=True)
 ft_white = Font(color=colors.WHITE)
 title_ft = Font(bold=True, size=25)
 title_2ft = Font(bold=True, size=20)
+ft_bld_black_14 = Font(color=colors.BLACK, bold=True, size=12)
 
 
 def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment=None):
@@ -367,9 +370,22 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
     dt = datetime.datetime.strptime(date, '%m/%d/%Y')
     ws[f'A{current_row}'] = dt.strftime('%A, %B %d, %Y')
     ws.merge_cells(f'A{current_row}:J{current_row}')
-    style_range(ws, f'A{current_row}:J{current_row}', border=thin_border)
     ws[f'A{current_row}'].font = ft
     current_row += 1
+    ws[f'A{current_row}'] = 'Date Notes:'
+    ws.merge_cells(f'A{current_row}:B{current_row}')
+    ws[f'A{current_row}'].font = ft
+    ws[f'A{current_row}'].fill = lightblueFill
+    ws[f'A{current_row}'].alignment = Alignment(horizontal='center')
+    ws[f'C{current_row}'] = ''
+    ws[f'C{current_row}'].fill = lightPurpleFill
+    # ws[f'C{current_row}'].alignment = Alignment(horizontal='center')
+    ws[f'C{current_row}'].font = ft_bld_black_14
+    ws.merge_cells(f'C{current_row}:J{current_row}')
+    style_range(ws, f'A{current_row}:J{current_row}', border=thin_allborder)
+
+    current_row += 1
+
     write_headers(current_row, ft_small)
 
     '''write sorted list of rows to excel'''
@@ -676,7 +692,7 @@ for sheet in sheets[1:]:
             each_date(date, group_by, sort_by)
         else:
             each_date(date)
-        current_row += 2
+        current_row += 3
 
     # ws.sheet_view.showGridLines = False
 
