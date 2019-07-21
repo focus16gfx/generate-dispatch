@@ -35,7 +35,7 @@ BKRPICKDFill = PatternFill(start_color='FFff00ff', end_color='FFff00ff', fill_ty
 BORDERFill = PatternFill(start_color='FF000000', end_color='FF000000', fill_type='solid')
 ENRTEFill = PatternFill(start_color='FF9e379f', end_color='FF800080', fill_type='solid')
 CARDEDFill = PatternFill(start_color='FF60a1f0', end_color='FF800080', fill_type='solid')
-ATCONSFill = PatternFill(start_color='FF0000ff', end_color='FF0000ff', fill_type='solid')
+ATCONSFill = PatternFill(start_color=colors.BLUE, end_color=colors.BLUE, fill_type='solid')
 SP4DELFill = PatternFill(start_color='FF4b0082', end_color='FF4b0082', fill_type='solid')
 SP4OBFill = PatternFill(start_color='FFee82ee', end_color='FFee82ee', fill_type='solid')
 SPTLDFill = PatternFill(start_color='FF00ffff', end_color='FF00ffff', fill_type='solid')
@@ -86,9 +86,9 @@ def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment
 def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=False, destination_everywhere=False):
     og_ws_main = og_wb.active
     if origin_everywhere:
-        og_ws_O2D = og_wb.create_sheet(f'Everywhere to {destination}')
+        og_ws_O2D = og_wb.create_sheet(f'{destination} Inbound')
     if destination_everywhere:
-        og_ws_O2D = og_wb.create_sheet(f'{origin} to Everywhere')
+        og_ws_O2D = og_wb.create_sheet(f'{origin} Outbound')
 
     if not origin_everywhere and not destination_everywhere:
         og_ws_O2D = og_wb.create_sheet(f'{origin} to {destination}')
@@ -426,6 +426,7 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
 
         elif status == 'ATCONS':
             ws[f'I{current_row}'].fill = ATCONSFill
+            ws[f'I{current_row}'].font = ft_white
         elif status == 'SP4DEL':
             ws[f'I{current_row}'].fill = SP4DELFill
             ws[f'I{current_row}'].font = ft_white
