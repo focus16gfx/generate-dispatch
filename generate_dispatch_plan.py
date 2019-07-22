@@ -160,6 +160,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 O2D_rows.append(row)
                 prev_trip = current_trip
 
+
         if destination_everywhere:
             if origin_pr == origin:
                 """supress local loads..ex: AB-->AB, BC--> etc"""
@@ -183,6 +184,15 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                         except:
                             pass
 
+                """skip rows with same trip as last trip"""
+                current_trip = row[1].value
+                if current_trip == prev_trip:
+                    O2D_rows.pop(-1)
+                O2D_rows.append(row)
+                prev_trip = current_trip
+
+            """Special case. WA-AB records in BC-ALL AKA BC OUTBOUND"""
+            if origin == 'BC' and ((origin_pr == 'WA' and destination_pr == 'AB') or ((origin_full == 'Wayfair Perris, CA' or origin_full.lower() == 'perris, ca') and destination_full.lower() == 'genelle, bc')):
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
@@ -216,34 +226,6 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                     O2D_rows.pop(-1)
                 O2D_rows.append(row)
                 prev_trip = current_trip
-
-        # '''SPECIAL CASES BELOWWW for BC to AB'''
-        # ##########special case, WA-->AB in everywhere -->BC
-        # # Just the "Wayfair Perris, CA" or "Perris, CA" to "Genelle, BC"
-        # # origin='BC', destination=AB
-        # if origin == 'BC' and destination == "AB":
-        #     if (origin_pr == 'WA' and destination_pr == 'AB') or (origin_full in ['Wayfair Perris, CA', 'Perris, CA'] and destination_full == 'Genelle, BC'):
-        #         """skip rows with same trip as last trip"""
-        #         current_trip = row[1].value
-        #         if current_trip == prev_trip:
-        #             O2D_rows.pop(-1)
-        #         O2D_rows.append(row)
-        #         prev_trip = current_trip
-        #
-        #
-        # """SPECIAL CASES BELOWWW FOR AB TO BC"""
-        # #AB --> BC + AB --> WA + AB --> CA
-        # if origin == 'AB' and destination == 'BC':
-        #     if (origin_pr == 'AB' and destination_pr == 'WA') or (origin_pr == 'AB' and destination_pr == 'CA'):
-        #         """skip rows with same trip as last trip"""
-        #         current_trip = row[1].value
-        #         if current_trip == prev_trip:
-        #             O2D_rows.pop(-1)
-        #         O2D_rows.append(row)
-        #         prev_trip = current_trip
-
-
-
 
 
     """write row data to sheet"""
@@ -333,7 +315,7 @@ def write_headers(row_num, fontyy=ft):
     style_range(ws, f'A{row_num}:J{row_num}', border=thin_allborder)
 
 
-def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
+def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_index):
     global lol
     queue_list = []
     queue_list = []
@@ -463,8 +445,9 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
 
     for row_q in queue_list:
         current_row += 1
-
         """Color records in grey if Origin,Dest is not AB,BC"""
+        origin_full = row_q[2].value
+        destination_full = row_q[4].value
         options_o_d = ['AB', 'BC']
         if row_q[2].value:
             origin_pr = row_q[2].value[-3:].replace(' ', '')
@@ -475,7 +458,10 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
         else:
             destination_pr = ''
         if origin_pr not in options_o_d or destination_pr not in options_o_d:
-            style_range(ws, f'A{current_row}:I{current_row}', font=ft_grey)
+            if sheet_name == 'BC Outbound' and ((origin_pr == 'WA' and destination_pr == 'AB') or ((origin_full == 'Wayfair Perris, CA' or origin_full.lower() == 'perris, ca') and destination_full.lower() == 'genelle, bc')):
+                pass
+            else:
+                style_range(ws, f'A{current_row}:I{current_row}', font=ft_grey)
 
         ws[f'D{current_row}'] = row_q[3].value
         ws[f'C{current_row}'] = row_q[2].value
@@ -706,19 +692,19 @@ for sheet in sheets[1:]:
         group_by = pickupdate_index
         sort_by = deliverydate_index
         get_dates(group_by)
-    elif sheet_title == 'Everywhere to BC':
+    elif sheet_title == 'BC Inbound':
         group_by = pickupdate_index
         sort_by = deliverydate_index
         get_dates(group_by)
-    elif sheet_title == 'BC to Everywhere':
+    elif sheet_title == 'BC Outbound':
         group_by = deliverydate_index
         sort_by = pickupdate_index
         get_dates(group_by)
-    elif sheet_title == 'Everywhere to AB':
+    elif sheet_title == 'AB Inbound':
         group_by = pickupdate_index
         sort_by = deliverydate_index
         get_dates(group_by)
-    elif sheet_title == 'AB to Everywhere':
+    elif sheet_title == 'AB Outbound':
         group_by = deliverydate_index
         sort_by = pickupdate_index
         get_dates(group_by)
@@ -754,25 +740,25 @@ for sheet in sheets[1:]:
         if sheet_title == 'AB to BC':
             group_by = pickupdate_index
             sort_by = deliverydate_index
-            each_date(date, group_by, sort_by)
-        elif sheet_title == 'Everywhere to BC':
+            each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
+        elif sheet_title == 'BC Inbound':
             group_by = pickupdate_index
             sort_by = deliverydate_index
-            each_date(date, group_by, sort_by)
-        elif sheet_title == 'BC to Everywhere':
+            each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
+        elif sheet_title == 'BC Outbound':
             group_by = deliverydate_index
             sort_by = pickupdate_index
-            each_date(date, group_by, sort_by)
-        elif sheet_title == 'Everywhere to AB':
+            each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
+        elif sheet_title == 'AB Inbound':
             group_by = pickupdate_index
             sort_by = deliverydate_index
-            each_date(date, group_by, sort_by)
-        elif sheet_title == 'AB to Everywhere':
+            each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
+        elif sheet_title == 'AB Outbound':
             group_by = deliverydate_index
             sort_by = pickupdate_index
-            each_date(date, group_by, sort_by)
+            each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         else:
-            each_date(date)
+            each_date(date, sheet_name=sheet_title)
         current_row += 3
 
     # ws.sheet_view.showGridLines = False
