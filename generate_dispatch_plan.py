@@ -24,7 +24,8 @@ blueFill = PatternFill(start_color='FF0099ff', end_color='FF0099ff', fill_type='
 lightblueFill = PatternFill(start_color='FFC5D9F1', end_color='FFC5D9F1', fill_type='solid')
 blackFill = PatternFill(start_color=colors.BLACK, end_color=colors.BLACK, fill_type='solid')
 lightPurpleFill = PatternFill(start_color='FFB1A0C7', end_color='FFB1A0C7', fill_type='solid')
-#B1A0C7
+inactiveGreyFill = PatternFill(start_color='FF808080', end_color='FF808080', fill_type='solid')
+#B1A0C7   808080
 
 # --------------------------------------------------------------------------------
 
@@ -55,6 +56,7 @@ thick_border = Border(bottom=Side(border_style=BORDER_THICK, color='00000000'),
 ft = Font(bold=True, size=15)
 ft_small = Font(bold=True)
 ft_white = Font(color=colors.WHITE)
+ft_grey = Font(color='FF808080')
 title_ft = Font(bold=True, size=25)
 title_2ft = Font(bold=True, size=20)
 ft_bld_black_14 = Font(color=colors.BLACK, bold=True, size=12)
@@ -71,7 +73,10 @@ def style_range(ws, cell_range, border=Border(), fill=None, font=None, alignment
         first_cell.alignment = alignment
     rows = ws[cell_range]
     if font:
-        first_cell.font = font
+        for row in rows:
+            for cell in row:
+                cell.font = font
+
     for cell in rows[0]:
         cell.border = cell.border + top
     for cell in rows[-1]:
@@ -97,7 +102,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
         og_ws_O2D = og_wb.create_sheet(f'{origin} to {destination}')
 
     '''write headers'''
-    for i in range(11):
+    for i in range(12):
         og_ws_O2D.cell(1, i + 1).value = og_ws_main.cell(1, i + 1).value
         og_ws_O2D.cell(1, i + 1).alignment = Alignment(horizontal='center')
 
@@ -107,8 +112,14 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
     prev_trip = ''
     current_trip = ''
     for row in list(og_ws_main.rows)[2:]:
-        origin_pr = row[2].value[-3:].replace(' ', '')
-        destination_pr = row[4].value[-3:].replace(' ', '')
+        if row[2].value:
+            origin_pr = row[2].value[-3:].replace(' ', '')
+        else:
+            origin_pr = ''
+        if row[4].value:
+            destination_pr = row[4].value[-3:].replace(' ', '')
+        else:
+            destination_pr = ''
         origin_full = row[2].value
         destination_full = row[4].value
         # current_trip = row[1].value
@@ -125,6 +136,23 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 if origin_pr == destination:
                     continue
 
+                """MINUS 1 DAY IF CONDITION SATISFIES"""
+                FB_string = row[11].value
+                if origin_full in ['HOPE BC', 'RICHMOND, BC',
+                                   'CHILLIWACK, BC'] and destination_pr == 'AB' and FB_string == 'WAL-MART CANADA C/O ABM':
+                    delta_oneday = datetime.timedelta(days=1)
+                    deliverby_string = row[5].value
+                    fmts = ['%m/%d/%Y %H:%M:%S', '%m/%d/%Y']
+                    for fmt in fmts:
+                        try:
+                            dt_dlvry = datetime.datetime.strptime(deliverby_string, fmt)
+                            dt_dlvry = dt_dlvry - delta_oneday
+                            deliverby_string = dt_dlvry.strftime(fmt).lstrip("0")
+                            row[5].value = deliverby_string
+                            break
+                        except:
+                            pass
+
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
@@ -138,6 +166,23 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
                 if destination_pr == origin:
                     continue
 
+                """MINUS 1 DAY IF CONDITION SATISFIES"""
+                FB_string = row[11].value
+                if origin_full in ['HOPE BC', 'RICHMOND, BC',
+                                   'CHILLIWACK, BC'] and destination_pr == 'AB' and FB_string == 'WAL-MART CANADA C/O ABM':
+                    delta_oneday = datetime.timedelta(days=1)
+                    deliverby_string = row[5].value
+                    fmts = ['%m/%d/%Y %H:%M:%S', '%m/%d/%Y']
+                    for fmt in fmts:
+                        try:
+                            dt_dlvry = datetime.datetime.strptime(deliverby_string, fmt)
+                            dt_dlvry = dt_dlvry - delta_oneday
+                            deliverby_string = dt_dlvry.strftime(fmt).lstrip("0")
+                            row[5].value = deliverby_string
+                            break
+                        except:
+                            pass
+
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
@@ -147,6 +192,24 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
 
         if not origin_everywhere and not destination_everywhere:
             if origin_pr == origin and destination_pr == destination:
+
+                """MINUS 1 DAY IF CONDITION SATISFIES"""
+                FB_string = row[11].value
+                if origin_full in ['HOPE BC', 'RICHMOND, BC',
+                                   'CHILLIWACK, BC'] and destination_pr == 'AB' and FB_string == 'WAL-MART CANADA C/O ABM':
+                    delta_oneday = datetime.timedelta(days=1)
+                    deliverby_string = row[5].value
+                    fmts = ['%m/%d/%Y %H:%M:%S', '%m/%d/%Y']
+                    for fmt in fmts:
+                        try:
+                            dt_dlvry = datetime.datetime.strptime(deliverby_string, fmt)
+                            dt_dlvry = dt_dlvry - delta_oneday
+                            deliverby_string = dt_dlvry.strftime(fmt).lstrip("0")
+                            row[5].value = deliverby_string
+                            break
+                        except:
+                            pass
+
                 """skip rows with same trip as last trip"""
                 current_trip = row[1].value
                 if current_trip == prev_trip:
@@ -178,6 +241,7 @@ def create_orig_dest_sheet(og_wb, origin='', destination='', origin_everywhere=F
         #             O2D_rows.pop(-1)
         #         O2D_rows.append(row)
         #         prev_trip = current_trip
+
 
 
 
@@ -241,6 +305,7 @@ def csv_to_xlsx(og_filename):
         ws.column_dimensions['I'].width = 10
         ws.column_dimensions['J'].width = 30
         ws.column_dimensions['K'].width = 20
+        ws.column_dimensions['L'].width = 40
 
 
     og_wb.save(f'{wd}\\{og_filename}.xlsx')
@@ -276,6 +341,8 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
     for row_q1 in rows_list:
         dt6 = datetime.datetime.strptime(date, '%m/%d/%Y')
         match_date = dt6.strftime('%A, %B %d, %Y')
+        delta_one_day = datetime.timedelta(days=1)
+
         if match_date in str(row_q1[group_by].value):
             queue_list.append(row_q1)
 
@@ -365,7 +432,7 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
     queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[sort_by].value), '%A, %B %d, %Y @ %H:%M'))
 
     global current_row
-
+    #Monday, July 22, 2019
     '''add heading each day'''
     dt = datetime.datetime.strptime(date, '%m/%d/%Y')
     ws[f'A{current_row}'] = dt.strftime('%A, %B %d, %Y')
@@ -396,6 +463,20 @@ def each_date(date, group_by=deliverydate_index, sort_by=pickupdate_index):
 
     for row_q in queue_list:
         current_row += 1
+
+        """Color records in grey if Origin,Dest is not AB,BC"""
+        options_o_d = ['AB', 'BC']
+        if row_q[2].value:
+            origin_pr = row_q[2].value[-3:].replace(' ', '')
+        else:
+            origin_pr = ''
+        if row_q[4].value:
+            destination_pr = row_q[4].value[-3:].replace(' ', '')
+        else:
+            destination_pr = ''
+        if origin_pr not in options_o_d or destination_pr not in options_o_d:
+            style_range(ws, f'A{current_row}:I{current_row}', font=ft_grey)
+
         ws[f'D{current_row}'] = row_q[3].value
         ws[f'C{current_row}'] = row_q[2].value
         ws[f'E{current_row}'] = row_q[4].value
