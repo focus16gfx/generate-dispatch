@@ -771,29 +771,15 @@ for sheet in sheets[1:]:
 
 
     name_ext = f'{sheet_title_manipped}_{name_ext}'
-    out_fn = f'DISPATCH_PLAN_{name_ext}'
+    out_fn = f'{name_ext}'
     folder = 'Output\\'
     try:
         os.mkdir(f'{wd}\\{folder[:-1]}')
     except FileExistsError:
         pass
-    try:
-        if old_filename:
-            wb.save(f'{wd}\\{folder}ov_{out_fn}.xlsx')
-        elif not is_import_v:
-            wb.save(f'{wd}\\{folder}{out_fn}_noV.xlsx')
-        elif is_import_v:
-            wb.save(f'{wd}\\{folder}{out_fn}.xlsx')
 
+    wb.save(f'{wd}\\{folder}{out_fn}.xlsx')
 
-    except PermissionError:
-        print(f'>>ERROR!! You did not close the .xlsx file. can\'t write to it while it\'s still open')
-        sys.exit()
-
-
-    if old_filename:
-        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved in "{folder}ov_{out_fn}.xlsx"')
-    else:
-        print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved in "{folder}{out_fn}.xlsx"')
+    print(f'>>SUCCESSFULLY generated a new dispatch plan, file saved in "{folder}{out_fn}.xlsx"')
 
     print('=============================================================================================================')
