@@ -457,7 +457,7 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
             destination_pr = row_q[4].value[-3:].replace(' ', '')
         else:
             destination_pr = ''
-        if origin_pr not in options_o_d or destination_pr not in options_o_d:
+        if (origin_pr not in options_o_d or destination_pr not in options_o_d) and 'Inbound' not in sheet_name:
             if sheet_name == 'BC Outbound' and ((origin_pr == 'WA' and destination_pr == 'AB') or ((origin_full == 'Wayfair Perris, CA' or origin_full.lower() == 'perris, ca') and destination_full.lower() == 'genelle, bc')):
                 pass
             else:
@@ -663,12 +663,8 @@ for sheet in sheets[1:]:
     for row in og_sheet.rows:
         value1 = str(row[1].value)
         if re.search(pattern1, value1):
-            '''remove probills start with 'V' if applicable'''
-            if is_import_v:
+            if not str(row[0].value).lower().startswith('v'):
                 rows_list.append(row)
-            else:
-                if not str(row[0].value).lower().startswith('v'):
-                    rows_list.append(row)
 
 
     old_row_list = []
