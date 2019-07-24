@@ -54,6 +54,7 @@ thick_border = Border(bottom=Side(border_style=BORDER_THICK, color='00000000'),
 
 '''create font objects for different text fields'''
 ft = Font(bold=True, size=15)
+ft_15_yellow = Font(bold=True, color=colors.YELLOW)
 ft_small = Font(bold=True)
 ft_white = Font(color=colors.WHITE)
 ft_grey = Font(color='FF808080')
@@ -421,15 +422,15 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
     ws.merge_cells(f'A{current_row}:J{current_row}')
     ws[f'A{current_row}'].font = ft
     current_row += 1
-    ws[f'A{current_row}'] = 'Date Notes:'
+    ws[f'A{current_row}'] = 'DAY NOTES:'
     ws.merge_cells(f'A{current_row}:B{current_row}')
-    ws[f'A{current_row}'].font = ft
+    ws[f'A{current_row}'].font = ft_small
     ws[f'A{current_row}'].fill = lightblueFill
     ws[f'A{current_row}'].alignment = Alignment(horizontal='center')
     ws[f'C{current_row}'] = ''
-    ws[f'C{current_row}'].fill = lightPurpleFill
+    ws[f'C{current_row}'].fill = blackFill
     # ws[f'C{current_row}'].alignment = Alignment(horizontal='center')
-    ws[f'C{current_row}'].font = ft_bld_black_14
+    ws[f'C{current_row}'].font = ft_15_yellow
     ws.merge_cells(f'C{current_row}:J{current_row}')
     style_range(ws, f'A{current_row}:J{current_row}', border=thin_allborder)
 
