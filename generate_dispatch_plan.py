@@ -569,9 +569,7 @@ og_wb = openpyxl.load_workbook(f'{wd}\\{og_filename}.xlsx')
 
 sheets = og_wb.sheetnames
 for sheet in sheets[1:]:
-    # is_import_v = input('**Want to import probills starting with \'V\'?(Y/N): ')
-    is_import_v = 'Y'
-    # old_filename = input(f'**{sheet} Old Dispatch plan file name: ')
+
     old_filename = None
     for file in os.listdir(path=wd):
         if sheet in file:
@@ -585,13 +583,6 @@ for sheet in sheets[1:]:
 
     if old_filename == '':
         old_filename = None
-
-    if is_import_v.lower() == 'y':
-        is_import_v = True
-    elif is_import_v.lower() == 'n':
-        is_import_v = False
-    else:
-        print(f'>>Invalid input. Please use either Y for Yes or N for No')
 
     old_ws = ''
 
