@@ -389,6 +389,7 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
                     elif status_priority[o_status] > status_priority[n_status]:
                         n_status = o_status
                         new_row[8].value = n_status
+    old_day_notes = ''
     if old_filename:
         for old_row in old_queue_list:
             lol = []
@@ -410,6 +411,20 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
                 lol[8] = old_row[8]
                 queue_list.append(lol)
 
+        """get day notes from old file"""
+        dt = datetime.datetime.strptime(date, '%m/%d/%Y')
+        date_stringu = dt.strftime('%A, %B %d, %Y')
+        date_regex = re.compile(r'\w+,\s\w+\s\d{2},\s\d{4}')
+        Acolumn = old_ws['A']
+        for cell in Acolumn:
+            if date_regex.search(str(cell.value)):
+                if date_regex.search(str(cell.value)).group(0) == date_stringu:
+                    print(cell.value, cell.row, ws['C' + str(cell.row + 1)].value)
+                    old_day_notes = old_ws['C' + str(cell.row + 1)].value
+                    break
+
+
+
     '''sort new rowlist by  pickup'''
 
     queue_list.sort(key=lambda x: datetime.datetime.strptime(str(x[sort_by].value), '%A, %B %d, %Y @ %H:%M'))
@@ -427,7 +442,7 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
     ws[f'A{current_row}'].font = ft_small
     ws[f'A{current_row}'].fill = lightblueFill
     ws[f'A{current_row}'].alignment = Alignment(horizontal='center')
-    ws[f'C{current_row}'] = ''
+    ws[f'C{current_row}'] = old_day_notes
     ws[f'C{current_row}'].fill = blackFill
     # ws[f'C{current_row}'].alignment = Alignment(horizontal='center')
     ws[f'C{current_row}'].font = ft_15_yellow
@@ -664,8 +679,7 @@ for sheet in sheets[1:]:
     for row in og_sheet.rows:
         value1 = str(row[1].value)
         if re.search(pattern1, value1):
-            if not str(row[0].value).lower().startswith('v'):
-                rows_list.append(row)
+            rows_list.append(row)
 
 
     old_row_list = []
@@ -693,8 +707,8 @@ for sheet in sheets[1:]:
         sort_by = deliverydate_index
         get_dates(group_by)
     elif sheet_title == 'AB Outbound':
-        group_by = deliverydate_index
-        sort_by = pickupdate_index
+        group_by = pickupdate_index
+        sort_by = deliverydate_index
         get_dates(group_by)
     else:
         get_dates()
@@ -742,8 +756,8 @@ for sheet in sheets[1:]:
             sort_by = deliverydate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         elif sheet_title == 'AB Outbound':
-            group_by = deliverydate_index
-            sort_by = pickupdate_index
+            group_by = pickupdate_index
+            sort_by = deliverydate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         else:
             each_date(date, sheet_name=sheet_title)
