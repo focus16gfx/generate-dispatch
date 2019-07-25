@@ -531,6 +531,7 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
             ws[f'I{current_row}'].font = ft_white
         elif status == 'SP4OB':
             ws[f'I{current_row}'].fill = SP4OBFill
+            ws[f'G{current_row}'] = ''
         elif status == 'SPTLD':
             ws[f'I{current_row}'].fill = SPTLDFill
 
@@ -707,8 +708,8 @@ for sheet in sheets[1:]:
         sort_by = deliverydate_index
         get_dates(group_by)
     elif sheet_title == 'AB Outbound':
-        group_by = deliverydate_index
-        sort_by = pickupdate_index
+        group_by = pickupdate_index
+        sort_by = deliverydate_index
         get_dates(group_by)
     else:
         get_dates()
@@ -756,8 +757,8 @@ for sheet in sheets[1:]:
             sort_by = deliverydate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         elif sheet_title == 'AB Outbound':
-            group_by = deliverydate_index
-            sort_by = pickupdate_index
+            group_by = pickupdate_index
+            sort_by = deliverydate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         else:
             each_date(date, sheet_name=sheet_title)
