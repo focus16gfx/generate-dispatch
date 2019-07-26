@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -497,6 +497,26 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
         ws[f'I{current_row}'] = row_q[8].value
 
         ws[f'J{current_row}'] = row_q[9].value
+        if old_filename:
+            for oldy_rw in old_queue_list:
+                if oldy_rw[1].value == row_q[1].value:
+                    coloi = oldy_rw[9].fill.start_color.index
+                    Colors = openpyxl.styles.colors.COLOR_INDEX
+                    try:
+                        result = str(Colors[coloi])
+                    except TypeError:
+                        if coloi == '00000000':
+                            break
+                        ws[f'J{current_row}'].fill = PatternFill(start_color=coloi, end_color=coloi,
+                                                                 fill_type='solid')
+                        break
+                    # result = "#FF" + result[2:]
+                    if result == '00000000':
+                        break
+                    ws[f'J{current_row}'].fill = PatternFill(start_color=result, end_color=result, fill_type='solid')
+                    break
+
+
 
         status = row_q[8].value
 
