@@ -531,7 +531,6 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
             ws[f'I{current_row}'].font = ft_white
         elif status == 'SP4OB':
             ws[f'I{current_row}'].fill = SP4OBFill
-            ws[f'G{current_row}'] = ''
         elif status == 'SPTLD':
             ws[f'I{current_row}'].fill = SPTLDFill
 
