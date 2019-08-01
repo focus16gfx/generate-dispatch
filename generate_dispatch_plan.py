@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-wd = os.getcwd()
-# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+# wd = os.getcwd()
+wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -723,8 +723,8 @@ for sheet in sheets[1:]:
         sort_by = pickupdate_index
         get_dates(group_by)
     elif sheet_title == 'AB Inbound':
-        group_by = pickupdate_index
-        sort_by = deliverydate_index
+        group_by = deliverydate_index
+        sort_by = pickupdate_index
         get_dates(group_by)
     elif sheet_title == 'AB Outbound':
         group_by = pickupdate_index
@@ -772,8 +772,8 @@ for sheet in sheets[1:]:
             sort_by = pickupdate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         elif sheet_title == 'AB Inbound':
-            group_by = pickupdate_index
-            sort_by = deliverydate_index
+            group_by = deliverydate_index
+            sort_by = pickupdate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         elif sheet_title == 'AB Outbound':
             group_by = pickupdate_index
