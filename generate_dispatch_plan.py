@@ -556,6 +556,9 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
             ws[f'I{current_row}'].font = ft_white
             if sheet.lower() == 'bc outbound':
                 style_range(ws, f'A{current_row}:I{current_row}', font=ft_grey)
+                """delete P/U when status is SP4DEL"""
+                ws[f'G{current_row}'] = ""
+
 
         elif status == 'SP4OB':
             ws[f'I{current_row}'].fill = SP4OBFill
