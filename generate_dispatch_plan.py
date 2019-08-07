@@ -554,6 +554,9 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
         elif status == 'SP4DEL':
             ws[f'I{current_row}'].fill = SP4DELFill
             ws[f'I{current_row}'].font = ft_white
+            if sheet.lower() == 'bc outbound':
+                style_range(ws, f'A{current_row}:I{current_row}', font=ft_grey)
+
         elif status == 'SP4OB':
             ws[f'I{current_row}'].fill = SP4OBFill
         elif status == 'SPTLD':
