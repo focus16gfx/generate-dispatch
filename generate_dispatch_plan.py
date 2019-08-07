@@ -8,6 +8,7 @@ import os
 import sys
 import csv
 from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
+from copy import copy
 
 pickupdate_index = 3
 deliverydate_index = 5
@@ -505,20 +506,8 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
         if old_filename:
             for oldy_rw in old_queue_list:
                 if oldy_rw[1].value == row_q[1].value:
-                    coloi = oldy_rw[9].fill.start_color.index
-                    Colors = openpyxl.styles.colors.COLOR_INDEX
-                    try:
-                        result = str(Colors[coloi])
-                    except TypeError:
-                        if coloi == '00000000':
-                            break
-                        ws[f'J{current_row}'].fill = PatternFill(start_color=coloi, end_color=coloi,
-                                                                 fill_type='solid')
-                        break
-                    # result = "#FF" + result[2:]
-                    if result == '00000000':
-                        break
-                    ws[f'J{current_row}'].fill = PatternFill(start_color=result, end_color=result, fill_type='solid')
+                    ws[f'J{current_row}'].fill = copy(oldy_rw[9].fill)
+                    ws[f'J{current_row}'].font = copy(oldy_rw[9].font)
                     break
 
 
