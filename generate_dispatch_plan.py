@@ -12,8 +12,8 @@ from openpyxl.utils.cell import coordinate_from_string, column_index_from_string
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-# wd = os.getcwd()
-wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+wd = os.getcwd()
+# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
@@ -302,6 +302,11 @@ def get_dates(group_by=deliverydate_index):
     pt3 = re.compile(r'^\d{1,2}/\d{1,2}/\d{4}')
     for row in rows_list:
         date_extracted = re.match(pt3, str(row[group_by].value)).group(0)
+        # str(re.match(pt3, str(row[group_by].value)).group(0)).split('/')[1]
+        month_t = date_extracted.split('/')[0].lstrip("0")
+        date_t = date_extracted.split('/')[1].lstrip("0")
+        year_t = date_extracted.split('/')[2]
+        date_extracted = f'{month_t}/{date_t}/{year_t}'
         if date_extracted not in dates:
             dates.append(date_extracted)
 
@@ -662,7 +667,7 @@ for sheet in sheets[1:]:
     ws.column_dimensions['G'].width = 10
     ws.column_dimensions['H'].width = 10
     ws.column_dimensions['I'].width = 10
-    ws.column_dimensions['J'].width = 20
+    ws.column_dimensions['J'].width = 26.25
 
     """name"""
     sheet_title = sheet
