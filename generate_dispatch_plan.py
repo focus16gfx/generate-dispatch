@@ -13,8 +13,8 @@ from copy import copy
 pickupdate_index = 3
 deliverydate_index = 5
 print('>>Initialising...')
-wd = os.getcwd()
-# wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
+# wd = os.getcwd()
+wd = '\\\ATL09FPS01\Accord-Folders\sschmidt\Desktop\Dispatch_script\Dispatch_script'
 
 
 
