@@ -381,7 +381,7 @@ def each_date(date, sheet_name, group_by=deliverydate_index, sort_by=pickupdate_
                     # except TypeError:
                     #     new_row[9] = ''
 
-                    prior_list = ['ASSGN', 'DISP', 'ATPICK', 'PICKD', 'BKRPICKD', 'BORDER', 'ENRTE', 'ATCONS', 'SP4DEL', 'SP4OB', 'CARDED', 'SPTLD', 'DELVD']
+                    prior_list = ['ASSGN', 'DISP', 'ATPICK', 'STOPOFF', 'PICKD', 'BKRPICKD', 'BORDER', 'ENRTE', 'ATCONS', 'SP4DEL', 'SP4OB', 'CARDED', 'SPTLD', 'DELVD']
                     status_priority = {}
                     for priority_index, status in enumerate(prior_list, start=1):
                         status_priority[status] = priority_index
