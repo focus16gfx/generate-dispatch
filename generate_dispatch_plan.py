@@ -719,8 +719,8 @@ for sheet in sheets[1:]:
         sort_by = deliverydate_index
         get_dates(group_by)
     elif sheet_title == 'BC Outbound':
-        group_by = deliverydate_index
-        sort_by = pickupdate_index
+        group_by = pickupdate_index
+        sort_by = deliverydate_index
         get_dates(group_by)
     elif sheet_title == 'AB Inbound':
         group_by = deliverydate_index
@@ -768,8 +768,8 @@ for sheet in sheets[1:]:
             sort_by = deliverydate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         elif sheet_title == 'BC Outbound':
-            group_by = deliverydate_index
-            sort_by = pickupdate_index
+            group_by = pickupdate_index
+            sort_by = deliverydate_index
             each_date(date, group_by=group_by, sort_by=sort_by, sheet_name=sheet_title)
         elif sheet_title == 'AB Inbound':
             group_by = deliverydate_index
